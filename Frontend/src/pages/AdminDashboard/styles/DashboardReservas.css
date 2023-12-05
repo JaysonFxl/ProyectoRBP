@@ -1,0 +1,25 @@
+.gestion-reservas {
+    padding: 20px;
+}
+
+.gestion-reservas h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.reservas-activas, .estadisticas-reservas {
+    margin-bottom: 30px;
+}
+
+.reservas-activas h3, .estadisticas-reservas h3 {
+    color: #555;
+    margin-bottom: 15px;
+}
+
+/* Estilos adicionales para los gráficos */
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 40vh;
+    width: 80vw;
+}

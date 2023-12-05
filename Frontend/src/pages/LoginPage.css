@@ -1,0 +1,44 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: url('https://veronahome.cl/public_html/wp-content/uploads/2019/10/Verona-PastoSintetico-Deporte-Chile-Futbol-1400x788.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.login-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-card h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background-color: #0056b3;
+    border: none;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #004494;
+}
+
+.form-group a {
+    display: block;
+    text-align: right;
+    color: #0056b3;
+    margin-top: 10px;
+}

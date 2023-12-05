@@ -1,0 +1,67 @@
+.datepicker-container .react-datepicker {
+    background-color: white;
+    border: 1px solid #007bff; /* Un borde azul, por ejemplo */
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+.datepicker-container .react-datepicker__header {
+    background-color: #00ff1ef5; /* Color de fondo azul */
+    color: rgb(190, 0, 0); /* Texto blanco para contraste */
+    border-bottom: none;
+}
+
+.datepicker-container .react-datepicker__current-month,
+.datepicker-container .react-datepicker-time__header,
+.datepicker-container .react-datepicker-year-header {
+    color: white; /* Texto blanco para los encabezados */
+}
+
+.datepicker-container .react-datepicker__day-name, 
+.datepicker-container .react-datepicker__day, 
+.datepicker-container .react-datepicker__time-name {
+    color: #333; /* Color oscuro para los días y nombres */
+}
+
+.datepicker-container .react-datepicker__day--selected, 
+.datepicker-container .react-datepicker__day--keyboard-selected,
+.datepicker-container .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+    background-color: #28a745; /* Color para la fecha seleccionada */
+    color: white;
+}
+
+/* Efectos al pasar el mouse */
+.datepicker-container .react-datepicker__day:hover,
+.datepicker-container .react-datepicker__month-text:hover,
+.datepicker-container .react-datepicker__quarter-text:hover,
+.datepicker-container .react-datepicker__year-text:hover {
+    background-color: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Estilos para los botones de navegación */
+.datepicker-container .react-datepicker__navigation {
+    top: 10px;
+    color: white;
+    font-size: 20px;
+}
+
+/* Estilos para el input (si lo estás utilizando) */
+.datepicker-container input {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    width: 100%;
+}
+
+.react-datepicker__day--highlighted-dates {
+    background-color: green;
+    color: white;
+}
+
+.react-datepicker__day--non-highlighted-dates {
+    background-color: red;
+    color: white;
+}

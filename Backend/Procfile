@@ -1,0 +1,2 @@
+web: cd ../Backend && python manage.py runserver
+frontend: cd ../Frontend && npm run dev
