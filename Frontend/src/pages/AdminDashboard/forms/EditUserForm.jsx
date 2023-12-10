@@ -91,11 +91,24 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         const selectedUser = users.find(user => user.id.toString() === userId);
         if (selectedUser) {
             setUserData({
-                ...initialState,  // Agregado para limpiar los campos del formulario al seleccionar un usuario
-                ...selectedUser // Agregado para cargar los datos del usuario seleccionado en el formulario.
+                ...initialState,
+                username: selectedUser.username || '',
+                firstName: selectedUser.first_name || '',
+                lastName: selectedUser.last_name || '',
+                email: selectedUser.email || '',
+                isSuperuser: selectedUser.is_superuser,
+                isStaff: selectedUser.is_staff,
+                isActive: selectedUser.is_active,
+                dateJoined: selectedUser.date_joined ? selectedUser.date_joined.slice(0, 10) : '', // Formato YYYY-MM-DD
+                isAdmin: selectedUser.is_admin,
+                rut: selectedUser.rut || '',
+                phone: selectedUser.phone || '',
+                alternatePhone: selectedUser.alternate_phone || '',
+                city: selectedUser.city || '',
+                state: selectedUser.state || ''
             });
         } else {
-            setUserData(initialState); // Si no se selecciona un usuario, se limpian los campos del formulario.
+            setUserData(initialState);
         }
     };
     
@@ -115,16 +128,16 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
             <div className="form-group">
             <input
                 type="text"
-                name="firstName" // Cambiado de first_Name a firstName
-                value={userData.firstName}
+                name="firstName"
+                value={userData.firstName || ''}
                 onChange={handleChange}
                 placeholder="Nombre"
-                className='form-control'
+                className="form-control"
             />
             <input
                 type="text"
                 name="lastName" // Cambiado de last_Name a lastName
-                value={userData.lastName}
+                value={userData.lastName || ''}
                 onChange={handleChange}
                 placeholder="Apellido"
                 className="form-control"
@@ -134,7 +147,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="email"
                     name="email"
-                    value={userData.email}
+                    value={userData.email || ''}
                     onChange={handleChange}
                     placeholder="Email"
                     className="form-control"
@@ -145,7 +158,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isSuperuser"
-                        checked={userData.isSuperuser}
+                        checked={userData.isSuperuser || '' }
                         onChange={handleChange}
                     />
                     Superusuario
@@ -156,7 +169,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isStaff"
-                        checked={userData.isStaff}
+                        checked={userData.isStaff || ''}
                         onChange={handleChange}
                     />
                     Personal
@@ -167,7 +180,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isActive"
-                        checked={userData.isActive}
+                        checked={userData.isActive || ''}
                         onChange={handleChange}
                     />
                     Activo
@@ -178,7 +191,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isAdmin"
-                        checked={userData.isAdmin}
+                        checked={userData.isAdmin || ''}
                         onChange={handleChange}
                     />
                     Es Admin
@@ -188,7 +201,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <label htmlFor="state">Estado de la Cuenta</label>
                 <select 
                     name="state" 
-                    value={userData.state} 
+                    value={userData.state || ''} 
                     onChange={handleChange} 
                     className="form-control"
                 >
@@ -202,7 +215,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="date"
                     name="dateJoined"
-                    value={userData.dateJoined}
+                    value={userData.dateJoined || ''}
                     onChange={handleChange}
                     className="form-control"
                 />
@@ -221,7 +234,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="phone"
-                    value={userData.phone}
+                    value={userData.phone || ''}
                     onChange={handleChange}
                     placeholder="Telefono" 
                     className="form-control"
@@ -231,7 +244,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="alternatePhone"
-                    value={userData.alternatePhone}
+                    value={userData.alternatePhone || ''}
                     onChange={handleChange}
                     placeholder="Telefono Alternativo"
                     className="form-control"
@@ -241,7 +254,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="city"
-                    value={userData.city}
+                    value={userData.city || ''}
                     onChange={handleChange}
                     placeholder="Ciudad"
                     className="form-control"
