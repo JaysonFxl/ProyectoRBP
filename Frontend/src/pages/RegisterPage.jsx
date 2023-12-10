@@ -31,16 +31,21 @@ function RegisterPage() {
             navigate('/login');
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
-        }
-        if (error.response) {
-            // La solicitud fue hecha y el servidor respondió con un código de estado
-            // que cae fuera del rango de 2xx
-            console.error('Error en la respuesta:', error.response.data);
-        } else if (error.request) {
-            // La solicitud fue hecha pero no se recibió respuesta
-            console.error('Sin respuesta:', error.request);
+    
+            if (error.response) {
+                // La solicitud fue hecha y el servidor respondió con un código de estado
+                // que cae fuera del rango de 2xx
+                console.error('Error en la respuesta:', error.response.data);
+            } else if (error.request) {
+                // La solicitud fue hecha pero no se recibió respuesta
+                console.error('Sin respuesta:', error.request);
+            } else {
+                // Error en la configuración de la solicitud o error de red
+                console.error('Error en la solicitud:', error.message);
+            }
         }
     };
+    
 
     return (
         <div className='register-container'>

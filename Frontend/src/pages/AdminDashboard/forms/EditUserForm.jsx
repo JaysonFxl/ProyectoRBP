@@ -158,7 +158,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isSuperuser"
-                        checked={userData.isSuperuser || '' }
+                        checked={!!userData.isSuperuser}
                         onChange={handleChange}
                     />
                     Superusuario
@@ -169,7 +169,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isStaff"
-                        checked={userData.isStaff || ''}
+                        checked={!!userData.isStaff}
                         onChange={handleChange}
                     />
                     Personal
@@ -180,7 +180,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isActive"
-                        checked={userData.isActive || ''}
+                        checked={!!userData.isActive}
                         onChange={handleChange}
                     />
                     Activo
@@ -191,7 +191,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     <input
                         type="checkbox"
                         name="isAdmin"
-                        checked={userData.isAdmin || ''}
+                        checked={!!userData.isAdmin}
                         onChange={handleChange}
                     />
                     Es Admin
@@ -201,21 +201,21 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <label htmlFor="state">Estado de la Cuenta</label>
                 <select 
                     name="state" 
-                    value={userData.state || ''} 
+                    value={userData.state} 
                     onChange={handleChange} 
                     className="form-control"
                 >
                     <option value="">Selecciona un Estado</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                    <option value="Suspendido">Suspendido</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                    <option value="suspendido">Suspendido</option>
                 </select>
             </div>
             <div className="form-group">
                 <input
                     type="date"
                     name="dateJoined"
-                    value={userData.dateJoined || ''}
+                    value={userData.dateJoined}
                     onChange={handleChange}
                     className="form-control"
                 />
@@ -236,7 +236,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     name="phone"
                     value={userData.phone || ''}
                     onChange={handleChange}
-                    placeholder="Telefono" 
+                    placeholder="Teléfono"
                     className="form-control"
                 />
             </div>
@@ -246,7 +246,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                     name="alternatePhone"
                     value={userData.alternatePhone || ''}
                     onChange={handleChange}
-                    placeholder="Telefono Alternativo"
+                    placeholder="Teléfono Alternativo"
                     className="form-control"
                 />
             </div>
