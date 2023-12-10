@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/AddUser.css';
 
-const AddUserForm = ({ onUserAdded }) => {
+const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [users, setUsers] = useState([]); // Agregado
     const [userData, setUserData] = useState({
         username: '',
         firstName: '',
@@ -19,6 +21,31 @@ const AddUserForm = ({ onUserAdded }) => {
         state: '',
     });
 
+    useEffect(() => {
+        // Carga los datos del usuario a editar
+        if (userDataToEdit) {
+            setUserData(userDataToEdit);
+        }
+    }, [userDataToEdit]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/clientes/');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUsers(data);
+                } else {
+                    // Manejar errores
+                }
+            } catch (error) {
+                // Manejar errores
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setUserData({ 
@@ -30,13 +57,9 @@ const AddUserForm = ({ onUserAdded }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        const userData = {
-            reservas: null,
-        }
-        
         try {
-            const response = await fetch('http://localhost:8000/clientes/', {
-                method: 'POST',
+            const response = await fetch(`http://localhost:8000/clientes/${userDataToEdit.id}/`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     // 'Authorization': `Bearer ${token}`, // Si usas tokens de autenticación
@@ -45,30 +68,42 @@ const AddUserForm = ({ onUserAdded }) => {
             });
     
             if (response.ok) {
-                const newUser = await response.json();
-                onUserAdded(newUser); // Actualiza la lista de usuarios
+                const updatedUser = await response.json();
+                onUserUpdated(updatedUser); // Función para manejar el usuario actualizado
                 // Mostrar mensaje de éxito
             } else {
                 // Mostrar mensaje de error
                 console.error('Error en la respuesta del servidor:', response);
             }
         } catch (error) {
-            console.error('Hubo un error al agregar el usuario:', error);
+            console.error('Hubo un error al actualizar el usuario:', error);
             // Mostrar mensaje de error
+        }
+    };
+
+    const handleUserSelect = (e) => {
+        const userId = e.target.value;
+        setSelectedUserId(userId);
+    
+        // Encuentra los datos del usuario seleccionado y actualiza el estado
+        const selectedUser = users.find(user => user.id.toString() === userId);
+        if (selectedUser) {
+            setUserData(selectedUser);
         }
     };
     
     return (
-        <form onSubmit={handleSubmit} className="add-user-form">
+        <form onSubmit={handleSubmit} className="edit-user-form">
             <div className="form-group">
-                <input
-                    type="text"
-                    name="username"
-                    value={userData.username}
-                    onChange={handleChange}
-                    placeholder="Username"
-                    className="form-control"
-                />
+                <label>Seleccionar Usuario:</label>
+                <select onChange={handleUserSelect} value={selectedUserId} className="form-control">
+                    <option value="">Seleccione un usuario</option>
+                    {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                            {user.username}
+                        </option>
+                    ))}
+                </select>
             </div>
             <div className="form-group">
             <input
@@ -205,9 +240,9 @@ const AddUserForm = ({ onUserAdded }) => {
                     className="form-control"
                 />
             </div>
-            <button type="submit" className="btn btn-primary">Agregar Usuario</button>
+            <button type="submit" className="btn btn-primary">Actualizar Usuario</button>
         </form>
     );
 };
 
-export default AddUserForm;
+export default EditUserForm;

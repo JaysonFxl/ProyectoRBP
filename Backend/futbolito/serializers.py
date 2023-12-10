@@ -4,8 +4,8 @@ from datetime import datetime
 
 class UsuarioSerializer(serializers.ModelSerializer):
     # Mostrar las reservas relacionadas con el usuario
-    reservas = serializers.PrimaryKeyRelatedField(many=True, queryset=Reserva.objects.all())
-    
+    reservas = serializers.PrimaryKeyRelatedField(many=True, queryset=Reserva.objects.all(), required=False)
+
     class Meta:
         model = Usuario
         #Fiels es una lista de los campos que queremos serializar (convertir a JSON) y mostrar en la API REST.

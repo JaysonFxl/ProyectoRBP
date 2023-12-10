@@ -1,4 +1,3 @@
-// CustomNavbar.jsx
 import React, { useContext } from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -14,9 +13,7 @@ import logo from '../assets/logofut.png';
 
 function CustomNavbar() {
     const { currentUser, logout } = useAuth();
-    const ThemeSwitcher = () => {
-        const {mode, toggleTheme } = useContext(ThemeContext); 
-    }
+    const { mode, toggleTheme } = useContext(ThemeContext); 
 
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="custom-navbar">

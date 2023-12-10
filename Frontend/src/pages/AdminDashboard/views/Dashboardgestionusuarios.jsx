@@ -14,7 +14,7 @@ const GestionUsuarios = () => {
     return (
         <Dashboardlayout>
             <div className="button-container">
-                <button className="btn btn-add" onClick={() => setCurrentView('addUser')}>Agregar Usuario</button>
+                <button className="btn btn-add" onClick={() => setCurrentView('addUser')}>Editar Usuarios</button>
                 <button className="btn btn-manage" onClick={() => setCurrentView('manageUsers')}>Gestionar Usuarios</button>
             </div>
             {currentView === 'addUser' && <AddUserForm onUserAdded={handleUserAdded} />}
