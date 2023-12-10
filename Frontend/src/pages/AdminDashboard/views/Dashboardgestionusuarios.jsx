@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Dashboardlayout from '../components/Dashboardlayout';
-import AddUserForm from '../forms/AddUserForm';
+import AddUserForm from '../forms/EditUserForm';
 import ManageUsersComponent from '../forms/ManageUsersComponent';
 import '../styles/Dashboardgestionusuario.css'
 

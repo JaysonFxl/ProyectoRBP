@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import '../styles/AddUser.css';
 
 const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
-    const [selectedUserId, setSelectedUserId] = useState(null);
-    const [users, setUsers] = useState([]); // Agregado
-    const [userData, setUserData] = useState({
+    // Definición del estado inicial para los campos del formulario
+    const initialState = {
         username: '',
         firstName: '',
         lastName: '',
@@ -19,12 +18,16 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         alternatePhone: '',
         city: '',
         state: '',
-    });
+    };
+
+    const [selectedUserId, setSelectedUserId] = useState(''); // Agregado para manejar el usuario seleccionado
+    const [users, setUsers] = useState([]); // Agregado para manejar la lista de usuarios
+    const [userData, setUserData] = useState(initialState); // Agregado para manejar los datos del usuario a editar
 
     useEffect(() => {
         // Carga los datos del usuario a editar
         if (userDataToEdit) {
-            setUserData(userDataToEdit);
+            setUserData(userDataToEdit); // Agregado para cargar los datos del usuario a editar
         }
     }, [userDataToEdit]);
 
@@ -50,7 +53,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         const { name, value, type, checked } = e.target;
         setUserData({ 
             ...userData, 
-            [name]: type === 'checkbox' ? checked : value 
+            [name]: type === 'checkbox' ? checked : value || '' 
         });
     };
 
@@ -58,7 +61,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         e.preventDefault();
         
         try {
-            const response = await fetch(`http://localhost:8000/clientes/${userDataToEdit.id}/`, {
+            const response = await fetch(`http://localhost:8000/clientes/${selectedUserId}/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -82,13 +85,17 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
     };
 
     const handleUserSelect = (e) => {
-        const userId = e.target.value;
+        const userId = e.target.value || '';
         setSelectedUserId(userId);
     
-        // Encuentra los datos del usuario seleccionado y actualiza el estado
         const selectedUser = users.find(user => user.id.toString() === userId);
         if (selectedUser) {
-            setUserData(selectedUser);
+            setUserData({
+                ...initialState,  // Agregado para limpiar los campos del formulario al seleccionar un usuario
+                ...selectedUser // Agregado para cargar los datos del usuario seleccionado en el formulario.
+            });
+        } else {
+            setUserData(initialState); // Si no se selecciona un usuario, se limpian los campos del formulario.
         }
     };
     
@@ -96,7 +103,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         <form onSubmit={handleSubmit} className="edit-user-form">
             <div className="form-group">
                 <label>Seleccionar Usuario:</label>
-                <select onChange={handleUserSelect} value={selectedUserId} className="form-control">
+                <select onChange={handleUserSelect} value={selectedUserId || ''} className="form-control">
                     <option value="">Seleccione un usuario</option>
                     {users.map((user) => (
                         <option key={user.id} value={user.id}>
