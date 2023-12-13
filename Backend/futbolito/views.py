@@ -11,12 +11,15 @@ from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.cache import never_cache
 from rest_framework.permissions import AllowAny
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from .models import Cancha, PrecioCancha, Reserva
+from django.shortcuts import get_object_or_404
 from django.views import generic
 from datetime import date, timedelta
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import views as auth_views
 from django.contrib import messages
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from .serializers import UsuarioSerializer, CanchaSerializer, ReservaSerializer, ValoracionSerializer
 
@@ -200,4 +203,36 @@ def user_info(request):
 
 class UsuarioRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
+    serializer_class = UsuarioSerializer 
+
+@api_view(['GET'])
+def horarios_disponibles(request, cancha_id, fecha):
+    # Obtener la cancha
+    cancha = get_object_or_404(Cancha, pk=cancha_id)
+    
+    # Convertir la fecha a un objeto datetime
+    fecha_reserva = datetime.strptime(fecha, '%Y-%m-%d')
+    fecha_fin = fecha_reserva + timedelta(days=1)
+
+    # Obtener las reservas existentes para esa cancha en esa fecha
+    reservas = Reserva.objects.filter(
+        cancha=cancha,
+        fecha_inicio__range=[fecha_reserva, fecha_fin]
+    )
+
+    # Calcular horarios disponibles (puedes definir tus propios horarios de operación)
+    horarios_operacion = [(hora, hora + timedelta(hours=1)) for hora in range(8, 20)]  # De 8:00 a 20:00 por ejemplo
+    horarios_disponibles = []
+    for inicio, fin in horarios_operacion:
+        if not reservas.filter(fecha_inicio__lt=fin, fecha_fin__gt=inicio).exists():
+            horarios_disponibles.append(inicio.strftime('%H:%M'))
+
+    # Obtener los precios para la cancha
+    precios = PrecioCancha.objects.filter(cancha=cancha).values('duracion', 'precio')
+
+    return Response({
+        'cancha': cancha.nombre,
+        'fecha': fecha,
+        'horarios_disponibles': horarios_disponibles,
+        'precios': list(precios)
+    })

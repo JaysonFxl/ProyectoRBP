@@ -79,28 +79,55 @@
     z-index: 1;
 }
 
-/*CSS de Reserva page*/
-.reserva-container {
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Mejoras generales en el formulario */
+.reserva-form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.titulo-reserva {
+/* Estilizar los grupos de formularios */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Estilizar las etiquetas y controles del formulario */
+.form-label, .form-control {
+    font-size: 16px; /* Ajusta el tamaño de la fuente */
+}
+
+/* Estilizar los botones */
+.btn {
+    margin: 5px;
+    font-size: 16px;
+}
+
+/* Detalles de la cancha seleccionada */
+.cancha-detalles {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.cancha-detalles img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.cancha-detalles h3 {
     color: #0056b3;
     font-weight: bold;
-}
-
-.reserva-form {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
 }
 
 /* Ajustes para dispositivos móviles */
 @media (max-width: 768px) {
     .reserva-form {
-        padding: 10px;
+        padding: 15px;
     }
 }

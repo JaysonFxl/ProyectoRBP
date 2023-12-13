@@ -15,6 +15,8 @@ function ReservaPage() {
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [selectedDuration, setSelectedDuration] = useState("10");
+    const [horariosDisponibles, setHorariosDisponibles] = useState([]);
+    const [precios, setPrecios] = useState([]);
     const navigate = useNavigate();
 
     // Función para manejar el cambio de duración de la reserva (personalizada o predefinida).
@@ -31,12 +33,15 @@ function ReservaPage() {
         axios.get('http://localhost:8000/canchas/')
             .then(response => {
                 setCanchas(response.data);
+                if(response.data.length > 0) {
+                    setSelectedCancha(response.data[0].id.toString()); // Establecer la primera cancha como seleccionada
+                }
             })
             .catch(error => {
                 console.error("Error al obtener las canchas:", error);
             });
-    }, []); // Array vacío para ejecutar solo al montar el componente
-
+    }, []);
+    
     // Este useEffect se usa para actualizar la información de la cancha seleccionada.
     // Se ejecuta cada vez que cambia el valor de selectedCancha.
     useEffect(() => {
@@ -44,7 +49,33 @@ function ReservaPage() {
         setCanchaSeleccionada(cancha);
     }, [selectedCancha, canchas]); // Depende solo de selectedCancha
 
-
+    useEffect(() => {
+        console.log("Canchas:", canchas);
+        console.log("Selected Cancha:", selectedCancha);
+    
+        if(selectedCancha) {
+            const canchaId = parseInt(selectedCancha, 10); 
+            const cancha = canchas.find(c => c.id === canchaId);
+            setCanchaSeleccionada(cancha);
+        }
+    
+        console.log("Cancha seleccionada:", canchaSeleccionada);
+    }, [selectedCancha, canchas]);
+    
+    
+    
+    useEffect(() => {
+        if (selectedCancha && selectedDate) {
+            axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${selectedDate}`)
+                .then(response => {
+                    setHorariosDisponibles(response.data.horarios_disponibles);
+                    setPrecios(response.data.precios);
+                })
+                .catch(error => console.error("Error al obtener horarios y precios:", error));
+        }
+        console.log(canchaSeleccionada);
+    }, [selectedCancha, selectedDate]);
+    
     const handleReserva = (event) => {
         event.preventDefault();
         //Aqui se envian las reservas al BackEnd.
@@ -95,23 +126,24 @@ function ReservaPage() {
                 <Form.Group as={Row} controlId="canchaSelect" className="mb-3">
                     <Form.Label column sm={2}>Cancha</Form.Label>
                     <Col sm={10}>
-                        <Form.Control as="select" value={selectedCancha} onChange={e => setSelectedCancha(e.target.value)}>
-                            {canchas.map(cancha => (
-                                <option key={cancha.id} value={cancha.id}>{cancha.nombre}</option>
-                            ))}
-                        </Form.Control>
+                    <Form.Control as="select" value={selectedCancha} onChange={e => setSelectedCancha(e.target.value)}>
+                        {canchas.map(cancha => (
+                            <option key={cancha.id} value={cancha.id}>{cancha.nombre}</option>
+                        ))}
+                    </Form.Control>
+
                     </Col>
                     {/* Mostrar la imagen de referencia si se ha seleccionado una cancha */}
                     {canchaSeleccionada && (
                         <div className="cancha-detalles">
+                            <img src={canchaSeleccionada.imagen} alt={`Imagen de ${canchaSeleccionada.nombre}`} className="img-fluid" />
                             <h3>{canchaSeleccionada.nombre}</h3>
-                            <img src={canchaSeleccionada.imagenURL} alt={`Imagen de ${canchaSeleccionada.nombre}`} />
-                            {/* Aquí puedes agregar más detalles como descripción, precio, etc. */}
-                            {/* Implementar lógica para mostrar horarios disponibles y precios */}
-                        </div>
+                            <p>Ubicación: {canchaSeleccionada.ubicacion}</p>
+                            <p>Tipo de Superficie: {canchaSeleccionada.tipo_superficie}</p>
+                            <p>Descripción: {canchaSeleccionada.descripcion}</p>
+                        </div>  
                     )}
                 </Form.Group>
-
                 {/* Componente CalendarioReservas */}
                 <CalendarioReservas />
     
@@ -125,12 +157,27 @@ function ReservaPage() {
                         </Form.Group>
                     </Col>
                     <Col md={6}>
-                        <Form.Group as={Row} controlId="timeSelect" className="mb-3">
-                            <Form.Label column sm={4}>Hora</Form.Label>
-                            <Col sm={8}>
-                                <Form.Control type="time" value={selectedTime} onChange={e => setSelectedTime(e.target.value)} />
-                            </Col>
-                        </Form.Group>
+                    <Form.Group as={Row} controlId="timeSelect" className="mb-3">
+                        <Form.Label column sm={4}>Hora</Form.Label>
+                        <Col sm={8}>
+                            <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                                <option value="">Seleccione un horario</option>
+                                {horariosDisponibles.map(horario => (
+                                    <option key={horario} value={horario}>{horario}</option>
+                                ))}
+                            </Form.Control>
+                        </Col>
+                    </Form.Group>
+
+                    {/* Mostrar precios según la duración seleccionada */}
+                    {selectedDuration && (
+                        <div className="precios">
+                            <p>Precio para la duración seleccionada: 
+                                {precios.find(p => p.duracion.toString() === selectedDuration)?.precio || 'No disponible'}
+                            </p>
+                        </div>
+                    )}
+
                     </Col>
                 </Row>
 

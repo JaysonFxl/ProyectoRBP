@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/disponibilidad_canchas/', views.disponibilidad_canchas, name='disponibilidad_canchas'),
     path('api/disponibilidad_fecha/', views.disponibilidad_fecha, name='disponibilidad_fecha'),
     path('api/user-info/', views.user_info, name='user_info'),
+    path('api/canchas/<int:cancha_id>/disponibilidad/<str:fecha>/', views.horarios_disponibles, name='horarios_disponibles')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

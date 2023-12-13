@@ -111,3 +111,11 @@ class Pago(models.Model):
     comprobante = models.ImageField(upload_to='comprobantes/', blank=True, null=True) 
     fecha_pago = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=15, choices=ESTADOS_PAGO, default='pendiente')
+
+class PrecioCancha(models.Model):
+    cancha = models.ForeignKey(Cancha, on_delete=models.CASCADE)
+    duracion = models.IntegerField()  # Duración en minutos
+    precio = models.DecimalField(max_digits=6, decimal_places=2)  # Precio de la reserva
+
+    def __str__(self):
+        return f"{self.cancha.nombre} - {self.duracion} minutos - {self.precio} $"
