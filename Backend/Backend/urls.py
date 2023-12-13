@@ -1,3 +1,5 @@
+import statistics
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from futbolito import views
@@ -20,4 +22,4 @@ urlpatterns = [
     path('api/disponibilidad_canchas/', views.disponibilidad_canchas, name='disponibilidad_canchas'),
     path('api/disponibilidad_fecha/', views.disponibilidad_fecha, name='disponibilidad_fecha'),
     path('api/user-info/', views.user_info, name='user_info'),
-]
+] + statistics (settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

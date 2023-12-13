@@ -136,7 +136,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
             />
             <input
                 type="text"
-                name="lastName" // Cambiado de last_Name a lastName
+                name="lastName"
                 value={userData.lastName || ''}
                 onChange={handleChange}
                 placeholder="Apellido"

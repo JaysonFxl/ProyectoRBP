@@ -14,7 +14,6 @@ function ReservaPage() {
     const [canchaSeleccionada, setCanchaSeleccionada] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
-    const [customDuration, setCustomDuration] = useState("");
     const [selectedDuration, setSelectedDuration] = useState("10");
     const navigate = useNavigate();
 
@@ -43,7 +42,7 @@ function ReservaPage() {
     useEffect(() => {
         const cancha = canchas.find(c => c.id === selectedCancha);
         setCanchaSeleccionada(cancha);
-    }, [selectedCancha]); // Depende solo de selectedCancha
+    }, [selectedCancha, canchas]); // Depende solo de selectedCancha
 
 
     const handleReserva = (event) => {
@@ -51,7 +50,6 @@ function ReservaPage() {
         //Aqui se envian las reservas al BackEnd.
         const reservaData = {
             cancha: selectedCancha,
-            rut: event.target.rutInput.value,
             fecha: event.target.dateSelect.value,
             hora: event.target.timeSelect.value,
             duracion: selectedDuration === "custom" ? customDuration : selectedDuration,
@@ -69,11 +67,6 @@ function ReservaPage() {
                 console.error("Error al hacer la reserva:", error);
             });
 
-        // Redirige al usuario a la página de confirmación
-        navigate({
-        pathname: '/confirmacion',
-        state: { reserva: reservaData }
-        });
 
     };
 
@@ -109,23 +102,19 @@ function ReservaPage() {
                         </Form.Control>
                     </Col>
                     {/* Mostrar la imagen de referencia si se ha seleccionado una cancha */}
-                {canchaSeleccionada && (
-                    <div className="text-center mt-3">
-                        <img src={canchaSeleccionada.imageUrl} alt={`Imagen de ${canchaSeleccionada.nombre}`} className="img-fluid" />
-                    </div>
-                )}
+                    {canchaSeleccionada && (
+                        <div className="cancha-detalles">
+                            <h3>{canchaSeleccionada.nombre}</h3>
+                            <img src={canchaSeleccionada.imagenURL} alt={`Imagen de ${canchaSeleccionada.nombre}`} />
+                            {/* Aquí puedes agregar más detalles como descripción, precio, etc. */}
+                            {/* Implementar lógica para mostrar horarios disponibles y precios */}
+                        </div>
+                    )}
                 </Form.Group>
 
                 {/* Componente CalendarioReservas */}
                 <CalendarioReservas />
     
-                <Form.Group as={Row} controlId="rutInput" className="mb-3">
-                    <Form.Label column sm={2}>RUT</Form.Label>
-                    <Col sm={10}>
-                        <Form.Control type="text" placeholder="Ejemplo: 12345678-9" pattern="\d{7,8}-[\dKk]" title="Formato: 12345678-9" required />
-                    </Col>
-                </Form.Group>
-
                 <Row>
                     <Col md={6}>
                         <Form.Group as={Row} controlId="dateSelect" className="mb-3">

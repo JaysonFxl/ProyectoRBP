@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }) => {
         <div className="dashboard-layout">
             <header className="dashboard-header">
                 <div className="logo">
-                    {/* Aquí puedes insertar tu logo */}
+                    {/* Aquí se inserta un logo */}
                     <img src={logoFut} alt="Logo" />
                 </div>
                 <h1>Dashboard Futbolito</h1>

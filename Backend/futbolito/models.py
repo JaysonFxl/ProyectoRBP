@@ -66,6 +66,7 @@ class Cancha(models.Model):
     tipo_superficie = models.CharField(max_length=15, choices=TIPOS_SUPERFICIE)
     ubicacion = models.CharField(max_length=255)
     descripcion = models.TextField(blank=True, null=True)
+    imagen = models.ImageField(upload_to='imagenes_canchas/', blank=True, null=True)
 
 class Reserva(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='reservas')
