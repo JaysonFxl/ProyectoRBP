@@ -5,7 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
 import './CalendarioReservas.css';
 
-const CalendarioReservas = () => {
+const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => {
     const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
     const [canchasDisponibles, setCanchasDisponibles] = useState([]);
     const [fechasDisponibles, setFechasDisponibles] = useState([]);
@@ -31,42 +31,26 @@ const CalendarioReservas = () => {
     };
         
     const consultarDisponibilidad = (fecha) => {
-        const fechaFormato = fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        // Convertir las fechas no disponibles a objetos Date para comparación
-        const fechasNoDisponiblesDateObj = fechasNoDisponibles.map(fechaStr => new Date(fechaStr));
+        const fechaFormato = format(fecha, 'yyyy-MM-dd');
     
-        // Verificar si la fecha seleccionada está en la lista de fechas no disponibles
-        const esFechaNoDisponible = fechasNoDisponiblesDateObj.some(fechaNoDisponible => 
-            fechaNoDisponible.toISOString().split('T')[0] === fechaFormato);
-    
-        if (esFechaNoDisponible) {
-            setCanchasDisponibles([]); // No hay canchas disponibles
-        } else {
-            axios.get(`/api/disponibilidad_canchas/?fecha_inicio=${fechaFormato}`)
-                .then(response => {
-                    if (Array.isArray(response.data)) {
-                        setCanchasDisponibles(response.data);
-                    } else {
-                        console.error('La respuesta no es un arreglo:', response.data);
-                        setCanchasDisponibles([]); // Establece un arreglo vacío si la respuesta no es un arreglo
-                    }
-                    console.log(response.data);
-                })
-                .catch(error => {
-                    if (error.response) {
-                        console.error('Error en la respuesta del servidor:', error.response.data);
-                        setCanchasDisponibles([]);
-                        console.error('Estado de la respuesta:', error.response.status);
-                        console.error('Encabezados de la respuesta:', error.response.headers);
-                    } else if (error.request) {
-                        console.error('No se recibió ninguna respuesta:', error.request);
-                    } else {
-                        console.error('Error al configurar la solicitud:', error.message);
-                    }
-                    console.error('Configuración completa de la solicitud:', error.config);
-                });
-        }
+        axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`)
+            .then(response => {
+                if (response.data && response.data.horarios_disponibles) {
+                    // Suponiendo que 'horarios_disponibles' es un arreglo
+                    setCanchasDisponibles(response.data.horarios_disponibles);
+                } else {
+                    // Manejar el caso en que la respuesta no es lo que se espera
+                    console.error('Formato inesperado de la respuesta:', response.data);
+                    setCanchasDisponibles([]);
+                }
+            })
+            .catch(error => {
+                // Manejar el error
+                console.error("Error al obtener canchas disponibles:", error);
+                setCanchasDisponibles([]);
+            });
     };
+    
     
     useEffect(() => {
         if (fechaSeleccionada) {
@@ -99,8 +83,9 @@ const CalendarioReservas = () => {
             <div>
                 {canchasDisponibles.length > 0 ? (
                     <ul>
-                        {canchasDisponibles.map(cancha => (
-                            <li key={cancha.id}>{cancha.nombre} - {cancha.ubicacion}</li>
+                        {canchasDisponibles.map((cancha, index) => (
+                        // Usar el índice como clave si 'cancha' no tiene un identificador único
+                        <li key={index}>{cancha}</li>
                         ))}
                     </ul>
                 ) : (

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.forms import ValidationError
+from django.db.models import JSONField
 
 class Usuario(AbstractUser):
     # Campo para determinar si un usuario es administrador
@@ -67,6 +68,7 @@ class Cancha(models.Model):
     ubicacion = models.CharField(max_length=255)
     descripcion = models.TextField(blank=True, null=True)
     imagen = models.ImageField(upload_to='imagenes_canchas/', blank=True, null=True)
+    horarios_disponibles = JSONField(default=list)
 
 class Reserva(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='reservas')

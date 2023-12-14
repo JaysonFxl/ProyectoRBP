@@ -128,32 +128,51 @@ def register(request):
     return Response({'success': 'Usuario creado con éxito'}, status=status.HTTP_201_CREATED) #Devuelve un mensaje de éxito si el usuario se creó correctamente.
 
 def disponibilidad_canchas(request):
-    # Obtener la fecha de inicio y fin desde los parámetros de la solicitud
-    fecha_inicio_str = request.GET.get('fecha_inicio')
-    fecha_fin_str = request.GET.get('fecha_fin', fecha_inicio_str)  # Si no se proporciona, usa la misma fecha de inicio
+    # Obtener el ID de la cancha y la fecha desde los parámetros de la solicitud
+    cancha_id = request.GET.get('cancha_id')
+    fecha_str = request.GET.get('fecha')
 
-    # Verificar si la fecha de inicio está presente
-    if not fecha_inicio_str:
-        return HttpResponseBadRequest("Se requiere la fecha de inicio.")
+    # Verificar si los parámetros están presentes
+    if not cancha_id or not fecha_str:
+        return HttpResponseBadRequest("Se requieren la cancha y la fecha.")
 
     try:
-        # Convertir las fechas de string a objetos datetime
-        fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
-        fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d') + timedelta(days=1)  # Incluir todo el día
+        # Convertir la fecha de string a objeto datetime
+        fecha = datetime.strptime(fecha_str, '%Y-%m-%d')
     except ValueError:
         return HttpResponseBadRequest("Formato de fecha inválido. Use YYYY-MM-DD.")
-    
-    todas_las_canchas = Cancha.objects.all()
 
-    reservas_solapadas = Reserva.objects.filter(fecha_fin__lt=fecha_fin, fecha_inicio__gt=fecha_inicio)
+    try:
+        # Obtener la cancha
+        cancha = Cancha.objects.get(id=cancha_id)
+    except Cancha.DoesNotExist:
+        return HttpResponseBadRequest("Cancha no encontrada.")
 
-    canchas_disponibles = todas_las_canchas.exclude(reserva__in=reservas_solapadas)
+    # Obtener las reservas para esa cancha en esa fecha
+    reservas = Reserva.objects.filter(
+        cancha=cancha,
+        fecha_inicio__date=fecha,
+        fecha_fin__date=fecha
+    )
+
+    # Convertir horarios de reservas a un conjunto para comparar
+    horarios_reservados = set(reserva.fecha_inicio.time() for reserva in reservas)
+
+    # Filtrar horarios disponibles
+    horarios_disponibles = [
+        horario for horario in cancha.horarios_disponibles
+        if horario not in horarios_reservados
+    ]
 
     respuesta = {
-        'disponible': list(canchas_disponibles.values('id', 'nombre', 'ubiacion', 'tipo_superficie'))
+        'id': cancha.id,
+        'nombre': cancha.nombre,
+        'ubicacion': cancha.ubicacion,
+        'tipo_superficie': cancha.tipo_superficie,
+        'horarios_disponibles': horarios_disponibles
     }
 
-    return JsonResponse(respuesta) #Devuelve la respuesta en formato JSON
+    return JsonResponse(respuesta)
 
 def calcular_disponibilidad(fecha_inicio, fecha_fin):
     # Fechas de prueba
@@ -206,25 +225,25 @@ class UsuarioRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     serializer_class = UsuarioSerializer 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def horarios_disponibles(request, cancha_id, fecha):
     # Obtener la cancha
     cancha = get_object_or_404(Cancha, pk=cancha_id)
     
     # Convertir la fecha a un objeto datetime
     fecha_reserva = datetime.strptime(fecha, '%Y-%m-%d')
-    fecha_fin = fecha_reserva + timedelta(days=1)
 
-    # Obtener las reservas existentes para esa cancha en esa fecha
-    reservas = Reserva.objects.filter(
-        cancha=cancha,
-        fecha_inicio__range=[fecha_reserva, fecha_fin]
-    )
-
-    # Calcular horarios disponibles (puedes definir tus propios horarios de operación)
-    horarios_operacion = [(hora, hora + timedelta(hours=1)) for hora in range(8, 20)]  # De 8:00 a 20:00 por ejemplo
+    # Calcular horarios disponibles
     horarios_disponibles = []
-    for inicio, fin in horarios_operacion:
-        if not reservas.filter(fecha_inicio__lt=fin, fecha_fin__gt=inicio).exists():
+    for hora in range(8, 20):  # De 8:00 a 20:00 por ejemplo
+        inicio = datetime.combine(fecha_reserva, datetime.min.time()) + timedelta(hours=hora)
+        fin = inicio + timedelta(hours=1)
+
+        # Comprobar si hay reservas que se solapen con este horario
+        if not Reserva.objects.filter(
+                cancha=cancha,
+                fecha_inicio__lt=fin,
+                fecha_fin__gt=inicio).exists():
             horarios_disponibles.append(inicio.strftime('%H:%M'))
 
     # Obtener los precios para la cancha

@@ -12,12 +12,13 @@ function ReservaPage() {
     const [canchas, setCanchas] = useState([]);
     const [selectedCancha, setSelectedCancha] = useState('');
     const [canchaSeleccionada, setCanchaSeleccionada] = useState(null);
-    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState('');
     const [selectedDuration, setSelectedDuration] = useState("10");
     const [horariosDisponibles, setHorariosDisponibles] = useState([]);
     const [precios, setPrecios] = useState([]);
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
 
     // Función para manejar el cambio de duración de la reserva (personalizada o predefinida).
     const handleDurationChange = (e) => {
@@ -45,9 +46,9 @@ function ReservaPage() {
     // Este useEffect se usa para actualizar la información de la cancha seleccionada.
     // Se ejecuta cada vez que cambia el valor de selectedCancha.
     useEffect(() => {
-        const cancha = canchas.find(c => c.id === selectedCancha);
+        const cancha = canchas.find(c => c.id === parseInt(selectedCancha, 10));
         setCanchaSeleccionada(cancha);
-    }, [selectedCancha, canchas]); // Depende solo de selectedCancha
+    }, [selectedCancha, canchas]);
 
     useEffect(() => {
         console.log("Canchas:", canchas);
@@ -66,15 +67,33 @@ function ReservaPage() {
     
     useEffect(() => {
         if (selectedCancha && selectedDate) {
-            axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${selectedDate}`)
+            const fechaFormato = selectedDate.toISOString().split('T')[0];
+            axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`)
                 .then(response => {
                     setHorariosDisponibles(response.data.horarios_disponibles);
                     setPrecios(response.data.precios);
                 })
                 .catch(error => console.error("Error al obtener horarios y precios:", error));
         }
-        console.log(canchaSeleccionada);
     }, [selectedCancha, selectedDate]);
+
+    useEffect(() => {
+        if (selectedDate && canchaSeleccionada && canchaSeleccionada.horarios_disponibles) {
+            const diaSeleccionado = new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long' });
+            console.log("Día seleccionado:", diaSeleccionado); 
+            
+            const horariosDelDia = canchaSeleccionada.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado.toLowerCase());
+            console.log("Horarios del día:", horariosDelDia); 
+            
+            if (horariosDelDia && horariosDelDia.horarios) {
+                setHorariosDisponibles(horariosDelDia.horarios);
+            } else {
+                setHorariosDisponibles([]);
+            }
+        }
+        console.log("Horarios disponibles:", horariosDisponibles); 
+    }, [selectedDate, canchaSeleccionada]);
+    
     
     const handleReserva = (event) => {
         event.preventDefault();
@@ -100,8 +119,6 @@ function ReservaPage() {
 
 
     };
-
-    const { currentUser } = useAuth();
 
     useEffect(() => {
         if (!currentUser) {
@@ -145,27 +162,22 @@ function ReservaPage() {
                     )}
                 </Form.Group>
                 {/* Componente CalendarioReservas */}
-                <CalendarioReservas />
-    
+                <CalendarioReservas 
+                    selectedCancha={selectedCancha}
+                    selectedDate={selectedDate}
+                    onFechaChange={(fecha) => setSelectedDate(fecha)}
+                />
                 <Row>
-                    <Col md={6}>
-                        <Form.Group as={Row} controlId="dateSelect" className="mb-3">
-                            <Form.Label column sm={4}>Fecha</Form.Label>
-                            <Col sm={8}>
-                                <Form.Control type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
-                            </Col>
-                        </Form.Group>
-                    </Col>
                     <Col md={6}>
                     <Form.Group as={Row} controlId="timeSelect" className="mb-3">
                         <Form.Label column sm={4}>Hora</Form.Label>
                         <Col sm={8}>
-                            <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
-                                <option value="">Seleccione un horario</option>
-                                {horariosDisponibles.map(horario => (
-                                    <option key={horario} value={horario}>{horario}</option>
-                                ))}
-                            </Form.Control>
+                        <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                            <option value="">Seleccione un horario</option>
+                            {horariosDisponibles.map((horario, index) => (
+                                <option key={index} value={horario}>{horario}</option>
+                            ))}
+                        </Form.Control>
                         </Col>
                     </Form.Group>
 
