@@ -14,9 +14,9 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         dateJoined: '',
         isAdmin: false,
         rut: '',
-        phone: '',
-        alternatePhone: '',
-        city: '',
+        telefono: '',
+        telefono_alternativo: '',
+        ciudad: '',
         state: '',
     };
 
@@ -102,9 +102,9 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 dateJoined: selectedUser.date_joined ? selectedUser.date_joined.slice(0, 10) : '', // Formato YYYY-MM-DD
                 isAdmin: selectedUser.is_admin,
                 rut: selectedUser.rut || '',
-                phone: selectedUser.phone || '',
-                alternatePhone: selectedUser.alternate_phone || '',
-                city: selectedUser.city || '',
+                telefono: selectedUser.telefono || '',
+                telefono_alternativo: selectedUser.telefono_alternativo || '',
+                ciudad: selectedUser.ciudad || '',
                 state: selectedUser.state || ''
             });
         } else {
@@ -234,7 +234,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="phone"
-                    value={userData.phone || ''}
+                    value={userData.telefono || ''}
                     onChange={handleChange}
                     placeholder="Teléfono"
                     className="form-control"
@@ -244,7 +244,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="alternatePhone"
-                    value={userData.alternatePhone || ''}
+                    value={userData.telefono_alternativo || ''}
                     onChange={handleChange}
                     placeholder="Teléfono Alternativo"
                     className="form-control"
@@ -254,7 +254,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 <input
                     type="text"
                     name="city"
-                    value={userData.city || ''}
+                    value={userData.ciudad || ''}
                     onChange={handleChange}
                     placeholder="Ciudad"
                     className="form-control"
