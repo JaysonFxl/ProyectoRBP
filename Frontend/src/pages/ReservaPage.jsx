@@ -4,7 +4,8 @@ import {useAuth} from '../context/authContext';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import './LandingPage.css';
 import CalendarioReservas from '../components/CalendarioReservas';
 
@@ -20,16 +21,16 @@ function ReservaPage() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
 
-    // Función para manejar el cambio de duración de la reserva (personalizada o predefinida).
+    //Función para manejar el cambio de duración de la reserva (personalizada o predefinida).
     const handleDurationChange = (e) => {
         setSelectedDuration(e.target.value);
         if (e.target.value !== "custom") {
-            setCustomDuration(""); // Limpiar el campo personalizado si no se selecciona "personalizado"
+            setCustomDuration(""); //Limpiar el campo personalizado si no se selecciona "personalizado"
         }
     };
 
-    // Este useEffect se usa para obtener las canchas desde el backend.
-    // Se ejecuta solo una vez cuando el componente se monta.
+    //Este useEffect se usa para obtener las canchas desde el backend.
+    //Se ejecuta solo una vez cuando el componente se monta.
     useEffect(() => {
         axios.get('http://localhost:8000/canchas/')
             .then(response => {
@@ -63,38 +64,42 @@ function ReservaPage() {
         console.log("Cancha seleccionada:", canchaSeleccionada);
     }, [selectedCancha, canchas]);
     
-    
-    
     useEffect(() => {
+        console.log("selectedCancha:", selectedCancha, "selectedDate:", selectedDate);
         if (selectedCancha && selectedDate) {
             const fechaFormato = selectedDate.toISOString().split('T')[0];
+            console.log("URL de solicitud:", `http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`);
             axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`)
                 .then(response => {
-                    setHorariosDisponibles(response.data.horarios_disponibles);
-                    setPrecios(response.data.precios);
+                    console.log("Respuesta del servidor:", response.data);
+                    if (response.data && response.data.horarios_disponibles) {
+                        setHorariosDisponibles(response.data.horarios_disponibles.map(h => h.hora));
+                        // Aquí también manejar los precios
+                    } else {
+                        setHorariosDisponibles([]);
+                    }
                 })
-                .catch(error => console.error("Error al obtener horarios y precios:", error));
+                .catch(error => {
+                    console.error("Error al obtener horarios y precios:", error);
+                    setHorariosDisponibles([]);
+                });
         }
     }, [selectedCancha, selectedDate]);
 
     useEffect(() => {
-        if (selectedDate && canchaSeleccionada && canchaSeleccionada.horarios_disponibles) {
-            const diaSeleccionado = new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long' });
-            console.log("Día seleccionado:", diaSeleccionado); 
-            
-            const horariosDelDia = canchaSeleccionada.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado.toLowerCase());
-            console.log("Horarios del día:", horariosDelDia); 
-            
-            if (horariosDelDia && horariosDelDia.horarios) {
-                setHorariosDisponibles(horariosDelDia.horarios);
-            } else {
-                setHorariosDisponibles([]);
-            }
+        if (selectedDate && canchaSeleccionada) {
+          const diaSeleccionado = format(selectedDate, 'EEEE', { locale: es }).toLowerCase();
+          
+          const horariosDelDia = canchaSeleccionada.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado);
+      
+          if (horariosDelDia) {
+            setHorariosDisponibles(horariosDelDia.horarios);
+          } else {
+            setHorariosDisponibles([]);
+          }
         }
-        console.log("Horarios disponibles:", horariosDisponibles); 
-    }, [selectedDate, canchaSeleccionada]);
-    
-    
+      }, [selectedDate, canchaSeleccionada]);
+        
     const handleReserva = (event) => {
         event.preventDefault();
         //Aqui se envian las reservas al BackEnd.
@@ -169,27 +174,30 @@ function ReservaPage() {
                 />
                 <Row>
                     <Col md={6}>
-                    <Form.Group as={Row} controlId="timeSelect" className="mb-3">
-                        <Form.Label column sm={4}>Hora</Form.Label>
-                        <Col sm={8}>
-                        <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
-                            <option value="">Seleccione un horario</option>
-                            {horariosDisponibles.map((horario, index) => (
-                                <option key={index} value={horario}>{horario}</option>
-                            ))}
-                        </Form.Control>
-                        </Col>
-                    </Form.Group>
+                        <Form.Group as={Row} controlId="timeSelect" className="mb-3">
+                            <Form.Label column sm={4}>Hora</Form.Label>
+                            <Col sm={8}>
+                                <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                                    <option value="">Seleccione un horario</option>
+                                    {console.log("Horarios disponibles antes del render:", horariosDisponibles)}
+                                    {horariosDisponibles.length > 0 ? (
+                                        horariosDisponibles.map((horario, index) => (
+                                            <option key={index} value={horario}>{horario}</option>
+                                        ))
+                                    ) : (
+                                        <option disabled>No hay horarios disponibles</option>
+                                    )}
+                                </Form.Control>
+                            </Col>
+                        </Form.Group>
 
-                    {/* Mostrar precios según la duración seleccionada */}
-                    {selectedDuration && (
-                        <div className="precios">
-                            <p>Precio para la duración seleccionada: 
-                                {precios.find(p => p.duracion.toString() === selectedDuration)?.precio || 'No disponible'}
-                            </p>
-                        </div>
-                    )}
-
+                        {selectedTime && precios[selectedTime] && (
+                            <div className="precios">
+                                <p>Precio para la duración seleccionada: 
+                                    {precios[selectedTime]}
+                                </p>
+                            </div>
+                        )}
                     </Col>
                 </Row>
 

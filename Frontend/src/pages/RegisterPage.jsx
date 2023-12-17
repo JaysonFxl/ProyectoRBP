@@ -1,78 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 import './RegisterPage.css';
 
 function RegisterPage() {
     const [step, setStep] = useState(1);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [rutNumber, setRutNumber] = React.useState('');
+    const [rutDv, setRutDv] = React.useState('');
     const [formData, setFormData] = useState({
         username: '',
         email: '',
         password: '',
         rut: '',
-        firstName: '',
-        lastName: '',
+        first_name: '',
+        last_name: '',
         telefono: '',
         telefono_alternativo: '',
         ciudad: '',
         estado: true 
     });
+     
+    useEffect(() => {
+        const completeRut = `${rutNumber}-${rutDv}`;
+        setFormData(prevState => ({
+            ...prevState,
+            rut: completeRut
+        }));
+    }, [rutNumber, rutDv]); // Este efecto se ejecutará cuando rutNumber o rutDv cambien
+
     const navigate = useNavigate();
     
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData (prevState => ({
+        const { name, value } = e.target;
+        setFormData(prevState => ({
             ...prevState,
             [name]: value
         }));
     };
 
-    const nextStep = () => {
-        if (step === 1) {
-            // Verificar si los campos del Paso 1 están completos
-            if (validateStepOne()) {
-                setStep(2);
-            } else {
-                // Mostrar algún mensaje de error o indicación
-                alert("Por favor, completa todos los campos requeridos.");
-            }
+    const prevStep = () => {
+        if(step === 2) {
+            // Si vuelve al paso 1, actualiza rutNumber y rutDv
+            const [number, dv] = formData.rut.split('-');
+            setRutNumber(number || '');
+            setRutDv(dv || '');
         }
-        else handleSubmit();
+    
+        setStep(step => step - 1);
     };
 
-    // Manejador para cambiar al paso anterior
-    const prevStep = () => {
-        if(step === 2) setStep(1);
+    const nextStep = () => {
+        if (step === 1) {
+            if (validateStepOne()) {
+                setStep(step => step + 1);
+            } else {
+                alert("Por favor, completa todos los campos requeridos.");
+            }
+        } else {
+            handleSubmit();
+        }
     };
 
     const validateStepOne = () => {
-        const { rut, username, firstName, lastName } = formData;
-        return rut && username && firstName && lastName;
+        const { username, first_name, last_name, rut } = formData;
+        return rut && username && first_name && last_name;
     };
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8000/api/register/', formData);
-            navigate('/login');
+            const response = await axios.post('http://localhost:8000/api/register/', formData);
+            
+            if (response.status === 200 || response.status === 201) {
+                // Mostrar un mensaje de éxito solo si la solicitud fue exitosa
+                Swal.fire({
+                    title: 'Éxito!',
+                    text: 'Cuenta creada exitosamente!',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    // Redireccionar al usuario después de cerrar la alerta
+                    navigate('/login');
+                });
+            } else {
+                //Agregar otro mensaje de error aquí si es necesario.
+            }
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
-    
+        
             if (error.response) {
-                // La solicitud fue hecha y el servidor respondió con un código de estado
-                // que cae fuera del rango de 2xx
+                // Manejar errores específicos de la respuesta aquí
                 console.error('Error en la respuesta:', error.response.data);
+                // Mostrar un mensaje de error
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'No se pudo crear la cuenta. Por favor, inténtalo de nuevo.',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
             } else if (error.request) {
-                // La solicitud fue hecha pero no se recibió respuesta
                 console.error('Sin respuesta:', error.request);
             } else {
-                // Error en la configuración de la solicitud o error de red
                 console.error('Error en la solicitud:', error.message);
             }
         }
     };
     
+    const handleRutDvChange = (e) => {
+        setRutDv(e.target.value);
+    };
 
+    const handleRutNumberChange = (e) => {
+        const value = e.target.value;
+    
+        // Permitir solo números y limitar a 8 dígitos
+        if (value.match(/^\d{0,8}$/)) {
+            setRutNumber(value);
+        }
+    };
+
+    const [showDvTip, setShowDvTip] = useState(false);
+
+    const handleDvFocus = () => {
+        setShowDvTip(true);
+        setTimeout(() => {
+            setShowDvTip(false);
+        }, 3000); // El mensaje se muestra durante 3 segundos
+    };
+
+    const validateInput = () => {
+        if (!email.includes('@')) {
+            setErrorMessage('Por favor ingresa un email válido.');
+            return false;
+        }
+        setErrorMessage('');
+        return true;
+    };
+    
     const renderForm = () => {
         switch (step) {
             case 1:
@@ -81,7 +147,33 @@ function RegisterPage() {
                         {/* Paso 1: Información Personal y de Contacto */}
                         <div className='form-group'>
                             <label htmlFor="rut">RUT</label>
-                            <input type="text" className="form-control" id="rut" name="rut" required onChange={handleInputChange} />
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="rutNumber" 
+                                    name="rutNumber" 
+                                    value={rutNumber}
+                                    onChange={handleRutNumberChange}
+                                    placeholder='12345678'
+                                    required 
+                                />
+                                <span style={{ margin: '0 10px' }}>-</span>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    id="rutDv" 
+                                    name="rutDv" 
+                                    value={rutDv}
+                                    onChange={handleRutDvChange}
+                                    onFocus={handleDvFocus}
+                                    placeholder="K"
+                                    required 
+                                    style={{ width: '50px' }} 
+                                />
+                            </div>
+                            {showDvTip && <p className="help-text">Puedes ingresar el dígito verificador en mayúscula o minúscula.</p>}
+                            <p className="help-text">(Ingresa tu número de RUT sin puntos y guion)</p>
                         </div>
                         <div className='form-group'>
                             <label htmlFor="username">Nombre de Usuario</label>
@@ -89,11 +181,11 @@ function RegisterPage() {
                         </div>
                         <div className='form-group'>
                             <label htmlFor="firstName">Nombre</label>
-                            <input type="text" className="form-control" id="firstName" name="firstName" required onChange={handleInputChange} />
+                            <input type="text" className="form-control" id="first_name" name="first_name" required onChange={handleInputChange} />
                         </div>
                         <div className='form-group'>
                             <label htmlFor="lastName">Apellido</label>
-                            <input type="text" className="form-control" id="lastName" name="lastName" required onChange={handleInputChange} />
+                            <input type="text" className="form-control" id="last_name" name="last_name" required onChange={handleInputChange} />
                         </div>
                         <button type="button" onClick={nextStep} className="btn btn-primary">Siguiente</button>
                     </div>
@@ -104,7 +196,18 @@ function RegisterPage() {
                         {/* Paso 2: Detalles de la Cuenta */}
                         <div className='form-group'>
                             <label htmlFor="email">Email</label>
-                            <input type="email" className="form-control" id="email" name="email" required onChange={handleInputChange} />
+                            <div className="input-icon">
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email} // Vincula el valor del estado
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                {errorMessage && <p className="error-message">{errorMessage}</p>}
+                            </div>
                         </div>
                         <div className='form-group'>
                             <label htmlFor="password">Contraseña</label>

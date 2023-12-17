@@ -36,16 +36,14 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
         axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`)
             .then(response => {
                 if (response.data && response.data.horarios_disponibles) {
-                    // Suponiendo que 'horarios_disponibles' es un arreglo
                     setCanchasDisponibles(response.data.horarios_disponibles);
+                    console.log("Día seleccionado:", format(fecha, 'EEEE'));
                 } else {
-                    // Manejar el caso en que la respuesta no es lo que se espera
                     console.error('Formato inesperado de la respuesta:', response.data);
                     setCanchasDisponibles([]);
                 }
             })
             .catch(error => {
-                // Manejar el error
                 console.error("Error al obtener canchas disponibles:", error);
                 setCanchasDisponibles([]);
             });
@@ -81,16 +79,17 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
                 }}
             />
             <div>
-                {canchasDisponibles.length > 0 ? (
-                    <ul>
-                        {canchasDisponibles.map((cancha, index) => (
-                        // Usar el índice como clave si 'cancha' no tiene un identificador único
-                        <li key={index}>{cancha}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No hay canchas disponibles para esta fecha.</p>
-                )}
+            {canchasDisponibles.length > 0 ? (
+                <ul>
+                    {canchasDisponibles.map((item, index) => (
+                        <li key={index}>
+                            Cancha {item.cancha} - Horario Disponible: {item.hora} - Precio: {item.precio} CLP
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No hay canchas disponibles para esta fecha.</p>
+            )}
             </div>
         </div>
     );
