@@ -76,13 +76,30 @@ const ManageUsersComponent = () => {
             if (response.ok) {
                 const updatedUser = await response.json();
                 setUsers(users.map(user => user.id === userId ? updatedUser : user));
+                
+                // Mostrar mensaje de confirmación
+                Swal.fire(
+                    '¡Actualizado!',
+                    'El usuario ha sido actualizado con éxito.',
+                    'success'
+                );
             } else {
                 // Mostrar un mensaje de error
                 console.error('Error en la respuesta del servidor:', response);
+                Swal.fire(
+                    'Error',
+                    'Hubo un problema al actualizar el usuario.',
+                    'error'
+                );
             }
         } catch (error) {
             console.error('Hubo un error al actualizar el usuario:', error);
             // Mostrar un mensaje de error
+            Swal.fire(
+                'Error',
+                'Hubo un problema al actualizar el usuario.',
+                'error'
+            );
         }
     };
     
