@@ -34,11 +34,12 @@ function ReservaPage() {
     useEffect(() => {
         axios.get('http://localhost:8000/canchas/')
             .then(response => {
-                setCanchas(response.data);
+                setCanchas(response.data); //Establecer las canchas en el estado.
                 if(response.data.length > 0) {
                     setSelectedCancha(response.data[0].id.toString()); // Establecer la primera cancha como seleccionada
                 }
             })
+            //Catch para manejar errores en la solicitud.
             .catch(error => {
                 console.error("Error al obtener las canchas:", error);
             });
@@ -51,10 +52,12 @@ function ReservaPage() {
         setCanchaSeleccionada(cancha);
     }, [selectedCancha, canchas]);
 
+    // Este useEffect se usa para actualizar la información de la cancha seleccionada.
     useEffect(() => {
         console.log("Canchas:", canchas);
         console.log("Selected Cancha:", selectedCancha);
     
+        // Si hay una cancha seleccionada, obtener la información de la cancha seleccionada.
         if(selectedCancha) {
             const canchaId = parseInt(selectedCancha, 10); 
             const cancha = canchas.find(c => c.id === canchaId);
@@ -62,7 +65,7 @@ function ReservaPage() {
         }
     
         console.log("Cancha seleccionada:", canchaSeleccionada);
-    }, [selectedCancha, canchas]);
+    }, [selectedCancha, canchas]); // Se ejecuta cada vez que cambia el valor de selectedCancha o canchas.
     
     // Obtener los horarios disponibles para la cancha seleccionada y el día seleccionado.
     useEffect(() => {
@@ -74,15 +77,15 @@ function ReservaPage() {
                 .then(response => {
                     console.log("Respuesta del servidor:", response.data);
                     if (response.data && response.data.horarios_disponibles) {
-                        setHorariosDisponibles(response.data.horarios_disponibles.map(h => h.hora));
+                        setHorariosDisponibles(response.data.horarios_disponibles.map(h => h.hora)); // Establecer los horarios disponibles para el día seleccionado.
                         // Aquí también manejar los precios
                     } else {
-                        setHorariosDisponibles([]);
+                        setHorariosDisponibles([]); // Limpiar los horarios disponibles si no hay horarios disponibles para el día seleccionado.
                     }
                 })
                 .catch(error => {
                     console.error("Error al obtener horarios y precios:", error);
-                    setHorariosDisponibles([]);
+                    setHorariosDisponibles([]); // Limpiar los horarios disponibles si hay un error en la solicitud.
                 });
         }
     }, [selectedCancha, selectedDate]);
@@ -90,17 +93,17 @@ function ReservaPage() {
     // Obtener los precios de la cancha seleccionada para el día seleccionado.
     useEffect(() => {
         if (selectedDate && canchaSeleccionada) {
-          const diaSeleccionado = format(selectedDate, 'EEEE', { locale: es }).toLowerCase();
+          const diaSeleccionado = format(selectedDate, 'EEEE', { locale: es }).toLowerCase(); // Obtener el día de la semana en español.
           
-          const horariosDelDia = canchaSeleccionada.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado);
+          const horariosDelDia = canchaSeleccionada.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado); // Buscar los horarios disponibles para el día seleccionado.
       
           if (horariosDelDia) {
-            setHorariosDisponibles(horariosDelDia.horarios);
+            setHorariosDisponibles(horariosDelDia.horarios); // Establecer los horarios disponibles para el día seleccionado.
           } else {
-            setHorariosDisponibles([]);
+            setHorariosDisponibles([]); // Limpiar los horarios disponibles si no hay horarios disponibles para el día seleccionado.
           }
         }
-      }, [selectedDate, canchaSeleccionada]);
+      }, [selectedDate, canchaSeleccionada]); // Se ejecuta cada vez que cambia el valor de selectedDate o canchaSeleccionada.
     
     // Obtener los precios de la cancha seleccionada para el día seleccionado. 
     const handleReserva = (event) => {
@@ -118,7 +121,7 @@ function ReservaPage() {
                 // Redirige al usuario a la página de confirmación
                 navigate({
                     pathname: '/confirmacion',
-                    state: { reserva: reservaData }
+                    state: { reserva: reservaData } //Pasar la información de la reserva a la página de confirmación a través del estado de la ubicación.
                 });
             })
             .catch(error => {
@@ -128,6 +131,7 @@ function ReservaPage() {
 
     };
 
+    // Este useEffect se usa para verificar si el usuario ha iniciado sesión o no.
     useEffect(() => {
         if (!currentUser) {
             Swal.fire({
@@ -142,7 +146,7 @@ function ReservaPage() {
                 }
             });
         }
-    }, [currentUser, navigate]);
+    }, [currentUser, navigate]); // Se ejecuta cada vez que cambia el valor de currentUser o navigate.
     
     return (
         <Container className="mt-5 reserva-container">
