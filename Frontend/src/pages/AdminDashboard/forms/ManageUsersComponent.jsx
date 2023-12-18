@@ -33,15 +33,15 @@ const ManageUsersComponent = () => {
             title: 'Editar Usuario',
             html: `
                 <input type="text" id="username" class="swal2-input" placeholder="Username" value="${user.username}">
-                <input type="text" id="firstName" class="swal2-input" placeholder="Nombre" value="${user.first_name}">
-                <input type="text" id="lastName" class="swal2-input" placeholder="Apellido" value="${user.last_name}">
+                <input type="text" id="first_name" class="swal2-input" placeholder="Nombre" value="${user.first_name}">
+                <input type="text" id="last_name" class="swal2-input" placeholder="Apellido" value="${user.last_name}">
                 <input type="email" id="email" class="swal2-input" placeholder="Email" value="${user.email}">
             `,
             focusConfirm: false,
             preConfirm: () => {
                 const username = document.getElementById('username').value;
-                const first_name = document.getElementById('firstName').value;
-                const last_name = document.getElementById('lastName').value;
+                const first_name = document.getElementById('first_name').value;
+                const last_name = document.getElementById('last_name').value;
                 const email = document.getElementById('email').value;
                 updateUserData(user.id, { username, first_name, last_name, email });
             }

@@ -99,6 +99,8 @@ class PasswordResetRequestView(generic.FormView):
 @permission_classes([AllowAny]) #Cualquiera puede registrarse
 def register(request):
     username = request.data.get('username')
+    first_name = request.data.get('first_name')
+    last_name = request.data.get('last_name')
     email = request.data.get('email')
     password = request.data.get('password')
     rut = request.data.get('rut')
@@ -116,6 +118,8 @@ def register(request):
     
     Usuario.objects.create_user(
         username=username,
+        first_name=first_name,
+        last_name=last_name,
         email=email,
         password=password,
         rut=rut,
