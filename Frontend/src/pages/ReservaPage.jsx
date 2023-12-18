@@ -9,6 +9,7 @@ import { es } from 'date-fns/locale';
 import './LandingPage.css';
 import CalendarioReservas from '../components/CalendarioReservas';
 
+// Componente para la página de reserva.
 function ReservaPage() {
     const [canchas, setCanchas] = useState([]);
     const [selectedCancha, setSelectedCancha] = useState('');
@@ -55,7 +56,7 @@ function ReservaPage() {
     // Este useEffect se usa para actualizar la información de la cancha seleccionada.
     useEffect(() => {
         console.log("Canchas:", canchas);
-        console.log("Selected Cancha:", selectedCancha);
+        console.log("Selected Cancha:", selectedCancha); // El valor de selectedCancha es una cadena, por lo que se debe convertir a un número entero.
     
         // Si hay una cancha seleccionada, obtener la información de la cancha seleccionada.
         if(selectedCancha) {
