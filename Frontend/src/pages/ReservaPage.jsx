@@ -64,6 +64,7 @@ function ReservaPage() {
         console.log("Cancha seleccionada:", canchaSeleccionada);
     }, [selectedCancha, canchas]);
     
+    // Obtener los horarios disponibles para la cancha seleccionada y el día seleccionado.
     useEffect(() => {
         console.log("selectedCancha:", selectedCancha, "selectedDate:", selectedDate);
         if (selectedCancha && selectedDate) {
@@ -86,6 +87,7 @@ function ReservaPage() {
         }
     }, [selectedCancha, selectedDate]);
 
+    // Obtener los precios de la cancha seleccionada para el día seleccionado.
     useEffect(() => {
         if (selectedDate && canchaSeleccionada) {
           const diaSeleccionado = format(selectedDate, 'EEEE', { locale: es }).toLowerCase();
@@ -99,7 +101,8 @@ function ReservaPage() {
           }
         }
       }, [selectedDate, canchaSeleccionada]);
-        
+    
+    // Obtener los precios de la cancha seleccionada para el día seleccionado. 
     const handleReserva = (event) => {
         event.preventDefault();
         //Aqui se envian las reservas al BackEnd.

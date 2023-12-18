@@ -11,6 +11,7 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
     const [fechasDisponibles, setFechasDisponibles] = useState([]);
     const [fechasNoDisponibles, setFechasNoDisponibles] = useState([]);
 
+    // Obtener las fechas disponibles y no disponibles para una fecha específica.
     const obtenerFechas = async (fechaInicio) => {
         // Asegúrate de que la fecha de inicio esté definida
         if (!fechaInicio) {
@@ -18,7 +19,7 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
             return { disponibles: [], noDisponibles: [] };
         }
     
-        // Formatea la fecha de inicio al formato YYYY-MM-DD
+        //Formatea la fecha de inicio al formato YYYY-MM-DD
         const fechaInicioFormato = format(fechaInicio, 'yyyy-MM-dd');
     
         try {
@@ -29,7 +30,8 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
             return { disponibles: [], noDisponibles: [] };
         }
     };
-        
+    
+    // Consultar la disponibilidad de canchas para una fecha específica.
     const consultarDisponibilidad = (fecha) => {
         const fechaFormato = format(fecha, 'yyyy-MM-dd');
     
@@ -49,7 +51,7 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
             });
     };
     
-    
+    // Obtener las fechas disponibles y no disponibles cuando se seleccione una fecha.
     useEffect(() => {
         if (fechaSeleccionada) {
             obtenerFechas(fechaSeleccionada).then(data => {
@@ -63,7 +65,7 @@ const CalendarioReservas = ({ selectedCancha, selectedDate, onFechaChange }) => 
      const fechasNoDisponiblesDateObj = Array.isArray(fechasNoDisponibles) ? fechasNoDisponibles.map(fechaStr => new Date(fechaStr)) : [];
      const fechasDisponiblesDateObj = Array.isArray(fechasDisponibles) ? fechasDisponibles.map(fecha => new Date(fecha)) : [];
 
-
+    // Actualizar la fecha seleccionada en el estado del componente padre (ReservaCancha) cuando cambie.
     return (
         <div className='datepicker-container'>
             <DatePicker

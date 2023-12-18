@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getToken, getStoredToken, removeToken, setToken } from '../security/authService';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/authContext';
 import { Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
@@ -28,16 +28,18 @@ function LoginPage() {
     //useNavigate es un hook que permite redirigir a una página específica de la aplicación web.
     const navigate = useNavigate();
 
+    //Función que maneja el envío del formulario de inicio de sesión. 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(formData.username, formData.password);
+            await login(formData.username, formData.password); //Llama a la función login del contexto de autenticación para iniciar sesión.
             setIsAuthenticated(true);
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
         }
     };
 
+    //useEffect es un hook que permite ejecutar código cuando el componente se monta, se desmonta o se actualiza.
     useEffect(() => {
         if (isAuthenticated && currentUser) {
             if (currentUser.es_administrador) {
@@ -46,12 +48,12 @@ function LoginPage() {
                 navigate('/');
             }
         }
-    }, [currentUser, isAuthenticated, navigate]);
+    }, [currentUser, isAuthenticated, navigate]); //El useEffect se ejecuta cuando cambia el estado de currentUser o isAuthenticated.
     
     
     // Función para cambiar entre el modo de administrador y el modo de usuario normal (no administrador) en el formulario de inicio de sesión 
     const toggleAdmin = () => {
-        setIsAdmin(!isAdmin);
+        setIsAdmin(!isAdmin); //Cambiar el estado de isAdmin.
     };
 
     const handleAdminChange = (e) => {

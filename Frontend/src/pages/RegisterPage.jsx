@@ -8,6 +8,8 @@ function RegisterPage() {
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState('');
     const [rutNumber, setRutNumber] = React.useState('');
+    const [firstName, setFirstName] = useState('');   
+    const [lastName, setLastName] = useState('');
     const [rutDv, setRutDv] = React.useState('');
     const [formData, setFormData] = useState({
         username: '',
@@ -22,35 +24,40 @@ function RegisterPage() {
         estado: true 
     });
      
+    // Efecto para actualizar el estado del formulario cuando cambie el número o el dígito verificador del RUT.
     useEffect(() => {
-        const completeRut = `${rutNumber}-${rutDv}`;
+        const completeRut = `${rutNumber}-${rutDv}`; // Concatena el número y el dígito verificador del RUT con un guion.
         setFormData(prevState => ({
             ...prevState,
-            rut: completeRut
+            rut: completeRut // Actualiza el valor del campo rut en el estado del formulario.
         }));
     }, [rutNumber, rutDv]); // Este efecto se ejecutará cuando rutNumber o rutDv cambien
 
+    // Hook para redireccionar al usuario a otra página (en este caso, a la página de inicio de sesión). 
     const navigate = useNavigate();
     
+    // Función para manejar los cambios en los campos del formulario. 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
-            ...prevState,
-            [name]: value
+            ...prevState, // Mantener los valores existentes en el estado del formulario (para no sobreescribirlos).
+            [name]: value // Actualizar el valor del campo que cambió.
         }));
     };
 
+    // Función para volver al paso anterior. 
     const prevStep = () => {
         if(step === 2) {
             // Si vuelve al paso 1, actualiza rutNumber y rutDv
             const [number, dv] = formData.rut.split('-');
-            setRutNumber(number || '');
-            setRutDv(dv || '');
+            setRutNumber(number || ''); // Si el número es undefined, establece el valor en vacío (para evitar que aparezca "undefined" en el campo de texto)
+            setRutDv(dv || ''); // Si el dígito verificador es undefined, establece el valor en vacío (para evitar que aparezca "undefined" en el campo de texto)
         }
     
-        setStep(step => step - 1);
+        setStep(step => step - 1); // Actualiza el estado de step para volver al paso anterior.
     };
 
+    // Función para pasar al siguiente paso. 
     const nextStep = () => {
         if (step === 1) {
             if (validateStepOne()) {
@@ -59,15 +66,17 @@ function RegisterPage() {
                 alert("Por favor, completa todos los campos requeridos.");
             }
         } else {
-            handleSubmit();
+            handleSubmit(); // Envía el formulario al backend si el usuario está en el paso 2 y hace clic en Siguiente.
         }
     };
 
+    // Función para validar que se hayan completado todos los campos del paso 1.
     const validateStepOne = () => {
         const { username, first_name, last_name, rut } = formData;
         return rut && username && first_name && last_name;
     };
     
+    // Función para enviar los datos del formulario al backend. 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -108,10 +117,12 @@ function RegisterPage() {
         }
     };
     
+    // Función para limitar el número de caracteres del RUT a 8 dígitos.
     const handleRutDvChange = (e) => {
         setRutDv(e.target.value);
     };
 
+    // Función para limitar el número de caracteres del RUT a 8 dígitos.
     const handleRutNumberChange = (e) => {
         const value = e.target.value;
     
@@ -121,8 +132,26 @@ function RegisterPage() {
         }
     };
 
+    const handleFirstNameChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo letras y espacios
+        if (value.match(/^[a-zA-Z\s]*$/)) {
+            setFirstName(value);
+        }
+    };
+    
+    const handleLastNameChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo letras y espacios
+        if (value.match(/^[a-zA-Z\s]*$/)) {
+            setLastName(value);
+        }
+    };
+
+    // Estado para mostrar un mensaje de ayuda al ingresar el dígito verificador del RUT.
     const [showDvTip, setShowDvTip] = useState(false);
 
+    // Función para mostrar un mensaje de ayuda al ingresar el dígito verificador del RUT.
     const handleDvFocus = () => {
         setShowDvTip(true);
         setTimeout(() => {
@@ -130,14 +159,15 @@ function RegisterPage() {
         }, 3000); // El mensaje se muestra durante 3 segundos
     };
 
+    // Función para validar el email. 
     const validateInput = () => {
         if (!email.includes('@')) {
             setErrorMessage('Por favor ingresa un email válido.');
             return false;
         }
-        setErrorMessage('');
-        return true;
-    };
+        setErrorMessage(''); // Si el email es válido, elimina el mensaje de error.
+        return true; // Devuelve true si el email es válido.
+    }; 
     
     const renderForm = () => {
         switch (step) {
@@ -181,11 +211,27 @@ function RegisterPage() {
                         </div>
                         <div className='form-group'>
                             <label htmlFor="firstName">Nombre</label>
-                            <input type="text" className="form-control" id="first_name" name="first_name" required onChange={handleInputChange} />
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                id="first_name" 
+                                name="first_name" 
+                                value={firstName} 
+                                onChange={handleFirstNameChange} 
+                                required 
+                            />
                         </div>
                         <div className='form-group'>
                             <label htmlFor="lastName">Apellido</label>
-                            <input type="text" className="form-control" id="last_name" name="last_name" required onChange={handleInputChange} />
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                id="last_name" 
+                                name="last_name" 
+                                value={lastName} 
+                                onChange={handleLastNameChange} 
+                                required 
+                            />
                         </div>
                         <button type="button" onClick={nextStep} className="btn btn-primary">Siguiente</button>
                     </div>
@@ -202,7 +248,7 @@ function RegisterPage() {
                                     className="form-control"
                                     id="email"
                                     name="email"
-                                    value={formData.email} // Vincula el valor del estado
+                                    value={formData.email} 
                                     onChange={handleInputChange}
                                     required
                                 />

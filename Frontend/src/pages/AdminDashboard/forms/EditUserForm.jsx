@@ -24,6 +24,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
     const [users, setUsers] = useState([]); // Agregado para manejar la lista de usuarios
     const [userData, setUserData] = useState(initialState); // Agregado para manejar los datos del usuario a editar
 
+    // Agregado para cargar los datos del usuario a editar cuando cambie la prop userDataToEdit.
     useEffect(() => {
         // Carga los datos del usuario a editar
         if (userDataToEdit) {
@@ -31,6 +32,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         }
     }, [userDataToEdit]);
 
+    // Agregado para obtener la lista de usuarios desde el backend.
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -49,6 +51,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         fetchUsers();
     }, []);
 
+    // Función para manejar los cambios en los campos del formulario (actualiza el estado).
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setUserData({ 
@@ -57,6 +60,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         });
     };
 
+    // Función para actualizar los datos del usuario en el backend. 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -84,10 +88,12 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
         }
     };
 
+    // Agregado para manejar el usuario seleccionado en el select de usuarios.
     const handleUserSelect = (e) => {
         const userId = e.target.value || '';
         setSelectedUserId(userId);
     
+        // Buscar el usuario seleccionado en la lista de usuarios y cargar sus datos en el formulario. 
         const selectedUser = users.find(user => user.id.toString() === userId);
         if (selectedUser) {
             setUserData({
@@ -108,7 +114,7 @@ const EditUserForm = ({ onUserUpdated, userDataToEdit }) => {
                 state: selectedUser.state || ''
             });
         } else {
-            setUserData(initialState);
+            setUserData(initialState); // Limpiar los datos del formulario si no se seleccionó ningún usuario.
         }
     };
     

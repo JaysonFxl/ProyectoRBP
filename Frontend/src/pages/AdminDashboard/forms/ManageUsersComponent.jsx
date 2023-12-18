@@ -51,11 +51,11 @@ const ManageUsersComponent = () => {
     // Función para actualizar los datos del usuario en el backend.
     const updateUserData = async (userId, userData) => {
         try {
-            let token = localStorage.getItem('token');
-            const tokenExpired = await isTokenValid();
+            let token = localStorage.getItem('token'); // Obtener el token del localStorage (si existe).
+            const tokenExpired = await isTokenValid(); // Verificar si el token está vencido. Si lo está, renovarlo.
     
             if (tokenExpired) {
-                token = await renewToken();
+                token = await renewToken(); // Renovar el token. 
             }
     
             if (!token) {
@@ -73,6 +73,7 @@ const ManageUsersComponent = () => {
                 body: JSON.stringify(userData),
             });
     
+            // Si la respuesta es exitosa, actualizar los datos del usuario en el estado para actualizar la UI.
             if (response.ok) {
                 const updatedUser = await response.json();
                 setUsers(users.map(user => user.id === userId ? updatedUser : user));
@@ -103,6 +104,7 @@ const ManageUsersComponent = () => {
         }
     };
     
+    // Función para eliminar un usuario (muestra un modal de confirmación).
     const handleDelete = (userId) => {
     Swal.fire({
         title: '¿Estás seguro?',
@@ -158,6 +160,7 @@ const deleteUser = async (userId) => {
                 'error'
             );
         }
+      //Catch para errores de conexión con el backend (servidor caído, etc.)
     } catch (error) {
         console.error('Hubo un error al eliminar el usuario:', error);
         Swal.fire(
