@@ -9,7 +9,10 @@ import { es } from 'date-fns/locale';
 import './LandingPage.css';
 import CalendarioReservas from '../components/CalendarioReservas';
 
-// Componente para la página de reserva.
+//ReservaPage es el componente que se encarga de mostrar el formulario de reserva.
+//Este componente se renderiza en la ruta /reservas.
+//Este componente se usa en App.jsx.
+
 function ReservaPage() {
     const [canchas, setCanchas] = useState([]);
     const [selectedCancha, setSelectedCancha] = useState('');

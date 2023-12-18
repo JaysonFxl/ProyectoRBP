@@ -4,6 +4,10 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import './RegisterPage.css';
 
+//Este componente renderiza el formulario de registro de usuarios, similar al formulario de inicio de sesión.
+//Este componente se renderiza cuando se accede a la ruta /register.
+//Este componente utiliza el hook useState para manejar el estado del formulario.
+
 function RegisterPage() {
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState('');
