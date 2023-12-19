@@ -12,8 +12,6 @@ function RegisterPage() {
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState('');
     const [rutNumber, setRutNumber] = React.useState('');
-    const [firstName, setFirstName] = useState('');   
-    const [lastName, setLastName] = useState('');
     const [rutDv, setRutDv] = React.useState('');
     const [formData, setFormData] = useState({
         username: '',
