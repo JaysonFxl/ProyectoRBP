@@ -18,8 +18,8 @@ const GestionUsuarios = () => {
                 <button className="btn btn-add" onClick={() => setCurrentView('addUser')}>Editar Usuarios</button>
                 <button className="btn btn-manage" onClick={() => setCurrentView('manageUsers')}>Gestionar Usuarios</button>
             </div>
-            {currentView === 'addUser' && <AddUserForm onUserAdded={handleUserAdded} />} //Renderiza el componente AddUserForm.
-            {currentView === 'manageUsers' && <ManageUsersComponent />} //Renderiza el componente ManageUsersComponent.
+            {currentView === 'addUser' && <AddUserForm onUserAdded={handleUserAdded} />} 
+            {currentView === 'manageUsers' && <ManageUsersComponent />} 
         </Dashboardlayout>
     );
 };

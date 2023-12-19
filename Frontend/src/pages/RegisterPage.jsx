@@ -140,7 +140,10 @@ function RegisterPage() {
         const value = e.target.value;
         // Permitir solo letras y espacios
         if (value.match(/^[a-zA-Z\s]*$/)) {
-            setFirstName(value);
+            setFormData(prevState => ({
+                ...prevState,
+                first_name: value
+            }));
         }
     };
     
@@ -148,7 +151,10 @@ function RegisterPage() {
         const value = e.target.value;
         // Permitir solo letras y espacios
         if (value.match(/^[a-zA-Z\s]*$/)) {
-            setLastName(value);
+            setFormData(prevState => ({
+                ...prevState,
+                last_name: value
+            }));
         }
     };
 
@@ -172,6 +178,29 @@ function RegisterPage() {
         setErrorMessage(''); // Si el email es válido, elimina el mensaje de error.
         return true; // Devuelve true si el email es válido.
     }; 
+
+    const handleTelefonoChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo números y limitar a 9 dígitos
+        if (value.match(/^\d{0,9}$/)) {
+            setFormData(prevState => ({
+                ...prevState,
+                telefono: value
+            }));
+        }
+    };
+    
+    const handleTelefonoAlternativoChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo números y limitar a 9 dígitos
+        if (value.match(/^\d{0,9}$/)) {
+            setFormData(prevState => ({
+                ...prevState,
+                telefono_alternativo: value
+            }));
+        }
+    };
+    
     
     const renderForm = () => {
         switch (step) {
@@ -220,7 +249,7 @@ function RegisterPage() {
                                 className="form-control" 
                                 id="first_name" 
                                 name="first_name" 
-                                value={firstName} 
+                                value={formData.first_name}
                                 onChange={handleFirstNameChange} 
                                 required 
                             />
@@ -232,7 +261,7 @@ function RegisterPage() {
                                 className="form-control" 
                                 id="last_name" 
                                 name="last_name" 
-                                value={lastName} 
+                                value={formData.last_name}
                                 onChange={handleLastNameChange} 
                                 required 
                             />
@@ -265,11 +294,27 @@ function RegisterPage() {
                         </div>
                         <div className='form-group'>
                             <label htmlFor="telefono">Teléfono</label>
-                            <input type="number" className="form-control" id="telefono" name="telefono" required onChange={handleInputChange} />
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                id="telefono" 
+                                name="telefono" 
+                                value={formData.telefono}
+                                onChange={handleTelefonoChange} 
+                                required 
+                            />
                         </div>
                         <div className='form-group'>
                             <label htmlFor="telefono_alternativo">Teléfono Alternativo</label>
-                            <input type="number" className="form-control" id="telefono_alternativo" name="telefono_alternativo" required onChange={handleInputChange} />
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                id="telefono_alternativo" 
+                                name="telefono_alternativo" 
+                                value={formData.telefono_alternativo}
+                                onChange={handleTelefonoAlternativoChange} 
+                                required 
+                            />
                         </div>
                         <div className='form-group'>
                             <label htmlFor="ciudad">Ciudad</label>
