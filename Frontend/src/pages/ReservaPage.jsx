@@ -35,64 +35,52 @@ function ReservaPage() {
 
     //Este useEffect se usa para obtener las canchas desde el backend.
     //Se ejecuta solo una vez cuando el componente se monta.
+    // Este useEffect maneja la carga inicial de canchas y la actualización de la cancha seleccionada
+// y los horarios disponibles cuando se selecciona una cancha o se cambia la fecha.
     useEffect(() => {
-        axios.get('http://localhost:8000/canchas/')
-            .then(response => {
-                setCanchas(response.data); //Establecer las canchas en el estado.
-                if(response.data.length > 0) {
-                    setSelectedCancha(response.data[0].id.toString()); // Establecer la primera cancha como seleccionada
-                }
-            })
-            //Catch para manejar errores en la solicitud.
-            .catch(error => {
-                console.error("Error al obtener las canchas:", error);
-            });
-    }, []);
-    
-    // Este useEffect se usa para actualizar la información de la cancha seleccionada.
-    // Se ejecuta cada vez que cambia el valor de selectedCancha.
-    useEffect(() => {
-        const cancha = canchas.find(c => c.id === parseInt(selectedCancha, 10));
-        setCanchaSeleccionada(cancha);
-    }, [selectedCancha, canchas]);
-
-    // Este useEffect se usa para actualizar la información de la cancha seleccionada.
-    useEffect(() => {
-        console.log("Canchas:", canchas);
-        console.log("Selected Cancha:", selectedCancha); // El valor de selectedCancha es una cadena, por lo que se debe convertir a un número entero.
-    
-        // Si hay una cancha seleccionada, obtener la información de la cancha seleccionada.
-        if(selectedCancha) {
-            const canchaId = parseInt(selectedCancha, 10); 
-            const cancha = canchas.find(c => c.id === canchaId);
-            setCanchaSeleccionada(cancha);
-        }
-    
-        console.log("Cancha seleccionada:", canchaSeleccionada);
-    }, [selectedCancha, canchas]); // Se ejecuta cada vez que cambia el valor de selectedCancha o canchas.
-    
-    // Obtener los horarios disponibles para la cancha seleccionada y el día seleccionado.
-    useEffect(() => {
-        console.log("selectedCancha:", selectedCancha, "selectedDate:", selectedDate);
-        if (selectedCancha && selectedDate) {
-            const fechaFormato = selectedDate.toISOString().split('T')[0];
-            console.log("URL de solicitud:", `http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`);
-            axios.get(`http://localhost:8000/api/canchas/${selectedCancha}/disponibilidad/${fechaFormato}`)
+        // Carga inicial de canchas
+        if (canchas.length === 0) {
+            axios.get('http://localhost:8000/canchas/')
                 .then(response => {
-                    console.log("Respuesta del servidor:", response.data);
-                    if (response.data && response.data.horarios_disponibles) {
-                        setHorariosDisponibles(response.data.horarios_disponibles.map(h => h.hora)); // Establecer los horarios disponibles para el día seleccionado.
-                        // Aquí también manejar los precios
-                    } else {
-                        setHorariosDisponibles([]); // Limpiar los horarios disponibles si no hay horarios disponibles para el día seleccionado.
+                    setCanchas(response.data);
+                    if(response.data.length > 0) {
+                        setSelectedCancha(response.data[0].id.toString());
                     }
                 })
                 .catch(error => {
-                    console.error("Error al obtener horarios y precios:", error);
-                    setHorariosDisponibles([]); // Limpiar los horarios disponibles si hay un error en la solicitud.
+                    console.error("Error al obtener las canchas:", error);
                 });
         }
-    }, [selectedCancha, selectedDate]);
+
+        // Actualizar la cancha seleccionada y los horarios disponibles
+        if (selectedCancha && selectedDate) {
+            const cancha = canchas.find(c => c.id === parseInt(selectedCancha, 10));
+            setCanchaSeleccionada(cancha);
+
+            const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+            const diaSeleccionado = format(selectedDate, 'EEEE', { locale: es }).toLowerCase();
+
+            // Si la cancha está seleccionada, buscar horarios disponibles para el día seleccionado
+            if (cancha) {
+                const horariosDelDia = cancha.horarios_disponibles.find(h => h.dia.toLowerCase() === diaSeleccionado);
+                
+                // Si no hay horarios del día almacenados localmente, hacer una llamada API para obtenerlos
+                if (!horariosDelDia) {
+                    axios.get(`http://localhost:8000/api/horarios_disponibles/${selectedCancha}/${formattedDate}`)
+                        .then(response => {
+                            setHorariosDisponibles(response.data.horarios_disponibles);
+                        })
+                        .catch(error => {
+                            console.error("Error al obtener horarios:", error);
+                            setHorariosDisponibles([]);
+                        });
+                } else {
+                    // Si hay horarios del día almacenados localmente, usar esos
+                    setHorariosDisponibles(horariosDelDia.horarios);
+                }
+            }
+        }
+    }, [selectedCancha, selectedDate, canchas]);
 
     // Obtener los precios de la cancha seleccionada para el día seleccionado.
     useEffect(() => {
@@ -110,29 +98,21 @@ function ReservaPage() {
       }, [selectedDate, canchaSeleccionada]); // Se ejecuta cada vez que cambia el valor de selectedDate o canchaSeleccionada.
     
     // Obtener los precios de la cancha seleccionada para el día seleccionado. 
-    const handleReserva = (event) => {
-        event.preventDefault();
-        //Aqui se envian las reservas al BackEnd.
+    const handleReserva = async () => {
         const reservaData = {
             cancha: selectedCancha,
-            fecha: event.target.dateSelect.value,
-            hora: event.target.timeSelect.value,
-            duracion: selectedDuration === "custom" ? customDuration : selectedDuration,
-            //Aqui pueden agregar más campos si es necesario (por ejemplo, el usuario que hizo la reserva).
+            fecha_inicio: format(selectedDate, 'yyyy-MM-dd'),
+            hora_inicio: selectedTime
         };
-        axios.post('http://localhost:8000/api/ruta-de-tu-endpoint', reservaData)
-            .then(response => {
-                // Redirige al usuario a la página de confirmación
-                navigate({
-                    pathname: '/confirmacion',
-                    state: { reserva: reservaData } //Pasar la información de la reserva a la página de confirmación a través del estado de la ubicación.
-                });
-            })
-            .catch(error => {
-                console.error("Error al hacer la reserva:", error);
-            });
-
-
+    
+        // Enviar los datos al backend
+        try {
+            const response = await axios.post('http://localhost:8000/api/crear_reserva/', reservaData);
+            // Manejar la respuesta del backend
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error al crear la reserva:', error);
+        }
     };
 
     // Este useEffect se usa para verificar si el usuario ha iniciado sesión o no.
@@ -188,27 +168,14 @@ function ReservaPage() {
                         <Form.Group as={Row} controlId="timeSelect" className="mb-3">
                             <Form.Label column sm={4}>Hora</Form.Label>
                             <Col sm={8}>
-                                <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
-                                    <option value="">Seleccione un horario</option>
-                                    {console.log("Horarios disponibles antes del render:", horariosDisponibles)}
-                                    {horariosDisponibles.length > 0 ? (
-                                        horariosDisponibles.map((horario, index) => (
-                                            <option key={index} value={horario}>{horario}</option>
-                                        ))
-                                    ) : (
-                                        <option disabled>No hay horarios disponibles</option>
-                                    )}
-                                </Form.Control>
+                            <Form.Control as="select" value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                                <option value="">Seleccione un horario</option>
+                                {horariosDisponibles.map((horario, index) => (
+                                    <option key={index} value={horario}>{horario}</option>
+                                ))}
+                            </Form.Control>
                             </Col>
                         </Form.Group>
-
-                        {selectedTime && precios[selectedTime] && (
-                            <div className="precios">
-                                <p>Precio para la duración seleccionada: 
-                                    {precios[selectedTime]}
-                                </p>
-                            </div>
-                        )}
                     </Col>
                 </Row>
 

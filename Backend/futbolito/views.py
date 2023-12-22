@@ -1,16 +1,20 @@
+import calendar
 from datetime import datetime, timedelta
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from rest_framework import generics, permissions
 from django.db.models import Q
 from .models import Usuario, Cancha, Reserva, Valoracion
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.cache import never_cache
-from rest_framework.permissions import AllowAny
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from .models import Cancha, PrecioCancha, Reserva
 from django.shortcuts import get_object_or_404
 from django.views import generic
@@ -22,6 +26,7 @@ from django.contrib import messages
 from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from .serializers import UsuarioSerializer, CanchaSerializer, ReservaSerializer, ValoracionSerializer
+
 
 @never_cache
 def login_view(request): #Vista para iniciar sesión
@@ -67,6 +72,16 @@ class UsuarioListCreate(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return [permissions.AllowAny()]
         return [IsAdminUserOrReadOnly()]
+
+class CanchaList(generics.ListAPIView):
+    queryset = Cancha.objects.all()
+    serializer_class = CanchaSerializer
+    permission_classes = [AllowAny] #Cualquiera puede ver las canchas
+
+class CanchaDetailView(RetrieveAPIView):
+    queryset = Cancha.objects.all()
+    serializer_class = CanchaSerializer
+    permission_classes = [AllowAny] #Cualquiera puede ver las canchas
 
 class CanchaListCreate(generics.ListCreateAPIView):
     queryset = Cancha.objects.all()
@@ -264,3 +279,163 @@ def horarios_disponibles(request, cancha_id, fecha):
         'fecha': fecha,
         'horarios_disponibles': horarios_disponibles
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def crear_reserva(request):
+    usuario = request.user
+    cancha_id = request.data.get('cancha_id')
+    fecha_str = request.data.get('fecha')
+    hora_str = request.data.get('hora')
+
+    try:
+        fecha_inicio = datetime.strptime(fecha_str + ' ' + hora_str, '%Y-%m-%d %H:%M')
+        fecha_fin = fecha_inicio + timedelta(hours=1)  # Asume que la reserva es por una hora
+    except ValueError:
+        return Response({'error': 'Formato de fecha o hora inválido'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Verificar si la cancha existe
+    try:
+        cancha = Cancha.objects.get(id=cancha_id)
+    except Cancha.DoesNotExist:
+        return Response({'error': 'Cancha no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Comprobar si hay reservas que se solapen
+    if Reserva.objects.filter(cancha=cancha, fecha_inicio__lt=fecha_fin, fecha_inicio__gt=fecha_inicio).exists():
+        return Response({'error': 'La cancha no está disponible en este horario'}, status=status.HTTP_400_BAD_REQUEST)
+
+    reserva = Reserva.objects.create(usuario=usuario, cancha=cancha, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+    return Response({'success': 'Reserva creada con éxito', 'reserva_id': reserva.id}, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verificar_disponibilidad(request, cancha_id, fecha, hora):
+    try:
+        fecha_hora_inicio = datetime.strptime(fecha + ' ' + hora, '%Y-%m-%d %H:%M')
+        fecha_hora_fin = fecha_hora_inicio + timedelta(hours=1)
+    except ValueError:
+        return Response({'error': 'Formato de fecha o hora inválido'}, status=status.HTTP_400_BAD_REQUEST)
+
+    disponible = not Reserva.objects.filter(cancha_id=cancha_id, fecha_inicio__lt=fecha_hora_fin, fecha_inicio__gt=fecha_hora_inicio).exists()
+    return Response({'disponible': disponible})
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def horarios_disponibles(request, cancha_id, fecha):
+    cancha = get_object_or_404(Cancha, pk=cancha_id)
+    fecha_obj = datetime.strptime(fecha, '%Y-%m-%d')
+    dia_semana = fecha_obj.strftime('%A').lower()
+
+    # Buscar horarios para el día específico
+    horarios_del_dia = [item for item in cancha.horarios_disponibles if item["dia"].lower() == dia_semana]
+    horarios_del_dia = horarios_del_dia[0]['horarios'] if horarios_del_dia else []
+
+    # Filtrar horarios ya reservados
+    horarios_reservados = Reserva.objects.filter(
+        cancha=cancha,
+        fecha_inicio__date=fecha_obj.date()
+    ).values_list('fecha_inicio__time', flat=True)
+
+    horarios_disponibles = [h for h in horarios_del_dia if h not in horarios_reservados]
+
+    return Response({
+        'cancha': cancha.nombre,
+        'fecha': fecha,
+        'horarios_disponibles': horarios_disponibles
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def actualizar_disponibilidad(request, cancha_id):
+    try:
+        cancha = Cancha.objects.get(id=cancha_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Cancha no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Asegúrate de que los datos enviados estén en el formato correcto y contengan la información necesaria
+    horarios_disponibles = request.data.get('horarios_disponibles')
+    if not horarios_disponibles:
+        return JsonResponse({'error': 'Datos de horarios disponibles requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Actualiza los horarios disponibles de la cancha
+    cancha.horarios_disponibles = horarios_disponibles
+    cancha.save()
+
+    return JsonResponse({'success': 'Disponibilidad actualizada correctamente'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def dias_disponibles(request, cancha_id, mes):
+    try:
+        cancha = Cancha.objects.get(id=cancha_id)
+    except Cancha.DoesNotExist:
+        return JsonResponse({'error': 'Cancha no encontrada'}, status=404)
+
+    year, month = map(int, mes.split('-'))
+    _, num_days = calendar.monthrange(year, month)
+    
+    dias_disponibles = []
+    for dia in range(1, num_days + 1):
+        fecha = datetime(year, month, dia)
+        if dia_disponible(cancha, fecha):
+            dias_disponibles.append(fecha.strftime('%Y-%m-%d'))
+
+    return JsonResponse({'dias_disponibles': dias_disponibles})
+
+def dia_disponible(cancha, fecha):
+    dia_semana = fecha.strftime('%A')
+    horarios_cancha = cancha.horarios_disponibles
+
+    # Busca si el día de la semana está en los horarios de la cancha
+    for horario in horarios_cancha:
+        if horario['dia'] == dia_semana and horario['horarios']:
+            return True
+    return False
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def horarios_disponibles_fecha(request, cancha_id, fecha):
+    # Obtener la cancha
+    cancha = get_object_or_404(Cancha, pk=cancha_id)
+
+    # Encontrar los detalles de horario para la fecha específica
+    detalles_horario = next((item for item in cancha.horarios_detalles if item["fecha"] == fecha), None)
+
+    if not detalles_horario:
+        return JsonResponse({
+            'cancha': cancha.nombre,
+            'fecha': fecha,
+            'horarios_disponibles': []
+        })
+
+    # Filtrar horarios ya reservados
+    horarios_reservados = Reserva.objects.filter(
+        cancha=cancha,
+        fecha_inicio__date=datetime.strptime(fecha, '%Y-%m-%d').date()
+    ).values_list('fecha_inicio__time', flat=True)
+
+    horarios_disponibles = [h for h in detalles_horario['horarios'] if h not in horarios_reservados]
+
+    return JsonResponse({
+        'cancha': cancha.nombre,
+        'fecha': fecha,
+        'horarios_disponibles': horarios_disponibles
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def actualizar_horarios_detalles(request, cancha_id):
+    try:
+        cancha = Cancha.objects.get(id=cancha_id)
+    except Cancha.DoesNotExist:
+        return JsonResponse({'error': 'Cancha no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    horarios_detalles = request.data.get('horarios_detalles')
+    if not horarios_detalles:
+        return JsonResponse({'error': 'Datos de horarios detallados requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
+    cancha.horarios_detalles = horarios_detalles
+    cancha.save()
+
+    return JsonResponse({'success': 'Horarios detallados actualizados correctamente'}, status=status.HTTP_200_OK)

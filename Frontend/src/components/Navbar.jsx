@@ -13,7 +13,9 @@ import logo from '../assets/logofut.png';
 
 function CustomNavbar() {
     const { currentUser, logout } = useAuth();
-    const { mode, toggleTheme } = useContext(ThemeContext); 
+    console.log("Usuario actual en Navbar:", currentUser);
+    const { mode, toggleTheme } = useContext(ThemeContext);
+    
 
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="custom-navbar">
@@ -26,11 +28,18 @@ function CustomNavbar() {
                 <Nav className="mr-auto">
                     <Nav.Link href="/">Inicio</Nav.Link>
                     <Nav.Link href="#">Sobre nosotros</Nav.Link>
+                    <Nav.Link href="/explorar-canchas">Explorar Canchas</Nav.Link>
                     <Link to="/reservas" className="nav-link">Reservas</Link>
                     <Nav.Link href="#">Contacto</Nav.Link>
-                    
+
+                    {/* Enlace del Panel de Administrador visible solo para administradores */}
+                    {currentUser?.es_administrador && (
+                    <Link to="/admin" className="nav-link">Panel Administrador</Link>
+                    )}
+
+             
                     {currentUser ? (
-                        <NavDropdown title={currentUser} id="basic-nav-dropdown">
+                        <NavDropdown title={currentUser?.username || "Usuario"} id="basic-nav-dropdown">
                             <NavDropdown.Item href="#">Configuración</NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item href="#" onClick={logout}>Cerrar sesión</NavDropdown.Item>

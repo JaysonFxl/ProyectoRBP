@@ -32,15 +32,18 @@ function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(formData.username, formData.password); //Llama a la función login del contexto de autenticación para iniciar sesión.
-            setIsAuthenticated(true);
+            await login(formData.username, formData.password); // Inicia sesión
+            setIsAuthenticated(true); // Usuario autenticado
+            // Aquí no rediriges inmediatamente. La redirección se maneja en useEffect
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
+            // Manejar errores de inicio de sesión aquí
         }
     };
 
     //useEffect es un hook que permite ejecutar código cuando el componente se monta, se desmonta o se actualiza.
     useEffect(() => {
+        console.log("Verificando redirección en LoginPage:", currentUser);
         if (isAuthenticated && currentUser) {
             if (currentUser.es_administrador) {
                 navigate('/admin');
@@ -48,7 +51,9 @@ function LoginPage() {
                 navigate('/');
             }
         }
-    }, [currentUser, isAuthenticated, navigate]); //El useEffect se ejecuta cuando cambia el estado de currentUser o isAuthenticated.
+    }, [currentUser, isAuthenticated, navigate]);
+    
+       //El useEffect se ejecuta cuando cambia el estado de currentUser o isAuthenticated.
     
     
     // Función para cambiar entre el modo de administrador y el modo de usuario normal (no administrador) en el formulario de inicio de sesión 

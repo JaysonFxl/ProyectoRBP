@@ -74,8 +74,7 @@ class Reserva(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='reservas')
     cancha = models.ForeignKey(Cancha, on_delete=models.CASCADE)
     fecha_inicio = models.DateTimeField()
-    fecha_fin = models.DateTimeField()
-    estado = models.CharField(max_length=15, default='pendiente')  #Ejemplo: pendiente, confirmada, cancelada
+    estado = models.CharField(max_length=15, default='pendiente')
 
     def clean(self):
         reservas_solapadas = Reserva.objects.filter(

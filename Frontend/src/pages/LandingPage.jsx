@@ -10,7 +10,6 @@ import backgroundImage from '../assets/Cancha_1.jpg';
 function LandingPage() {
     return (
         <div className="landing-page">
-            <CustomNavbar />
             {/* Sección Principal */}
             <section className="hero-section text-center bg-success text-dark py-5" style={{backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover'}}>
                 <Container>

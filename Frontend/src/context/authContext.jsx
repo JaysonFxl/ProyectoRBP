@@ -15,24 +15,35 @@ export const AuthProvider = ({ children }) => {
         try {
             const token = await getToken(username, password);
             setToken(token);
-
-            // Obtener información adicional del usuario
+    
             const userInfo = await getUserInfo(token);
-            setCurrentUser({ username, ...userInfo });
+            console.log("User info:", userInfo); // Para depuración
+            setCurrentUser({
+                username: userInfo.username,
+                es_administrador: userInfo.es_administrador
+            });
+            console.log("Usuario actual después del inicio de sesión:", currentUser);
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             throw error;
         }
     };
-
+    
     useEffect(() => {
         const token = getStoredToken();
         if (token) {
             const decodedToken = JSON.parse(atob(token.split('.')[1]));
-            const username = decodedToken.username;
-            setCurrentUser(username);
+            console.log("Decoded token:", decodedToken); // Para depuración
+            setCurrentUser({
+                username: decodedToken.username,
+                es_administrador: decodedToken.es_administrador
+            });
         }
     }, []);
+    
+    
+    
+    
 
     // Función para obtener información adicional del usuario.
     const value = {
